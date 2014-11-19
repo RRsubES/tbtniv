@@ -1,5 +1,5 @@
 # input: BEACON LVLS_SEPARATED_BY_HYPHEN NUMBER_OF_LVLS
-# output: BEACON_LEN BEACON NUMBER_OF_LVLS LVLS_SEP_BY_HYPHEN NUMBER_OF_BEACON_USING_THAT_TBTNIV TOTAL_NUMBER_OF_DIFFERENT_TBTNIV
+# output: BEACON NUMBER_OF_LVLS LVLS_SEP_BY_HYPHEN NUMBER_OF_BEACON_USING_THAT_TBTNIV TOTAL_NUMBER_OF_DIFFERENT_TBTNIV
 BEGIN {
 	FS="[ \t]*"
 }
@@ -17,7 +17,7 @@ END {
 	}
 	for (t in db) {
 		for (n in db[t]) 
-			printf("%d %s %d %s %d\n", length(n), n, db[t][n], suffix[t], total) | "sort  -k3,3n -k4,4 -k1,1n -k2,2 | cut -d' '  -f 2,4-6" 
+			printf("%s %d %s %d\n", n, db[t][n], suffix[t], total) 
 
 	}
 }

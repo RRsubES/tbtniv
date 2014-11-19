@@ -1,2 +1,4 @@
 #!/bin/bash
-cp *.awk /cdrive/s/CAUTRA/SATIN/TBTNIV/scripts/awk
+for f in "$@"; do
+	cp $f /cygdrive/s/CAUTRA/SATIN/TBTNIV/scripts_awk
+done
