@@ -9,5 +9,6 @@ BEGIN {
 }
 
 END {
-	print "OK" > "/dev/stderr"
+	#print "> [" ENVIRON["OUTPUT_FILE"] "]: OK" > "/dev/stderr"
+	printf("> [%s]: OK\n", ENVIRON["PRETTY_FILE"]) > "/dev/stderr"
 }
