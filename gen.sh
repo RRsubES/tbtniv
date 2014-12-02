@@ -3,8 +3,9 @@
 # ./gen.sh < BALISEP
 # or BALISEP_FILE_ALPHA=BALISEP0.txt ./gen.txt < BALISEP
 
-#TMP=$(mktemp)
-TMP="/tmp/tbtniv.$$.tmp"
+#TMP=$(mktemp tbtniv.XXXX.tmp)
+#TMP="/tmp/tbtniv.$$.tmp"
+TMP="/tmp/tbtniv.$(date '+%d%b%Y-%lh%M').tmp"
 
 awk -f filter.awk | 
  awk -f extract.awk |
