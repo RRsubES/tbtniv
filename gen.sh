@@ -5,16 +5,16 @@
 
 #TMP=$(mktemp tbtniv.XXXX.tmp)
 #TMP="/tmp/tbtniv.$$.tmp"
-TMP="/tmp/tbtniv.$(date '+%d%b%Y-%lh%M').tmp"
+TMP="/tmp/tbtniv.$(date '+%d%b%Y-%kh%M').tmp"
 
 awk -f filter.awk | 
  awk -f extract.awk |
  awk -f process.awk > $TMP
 
 export PRETTY_FILE=${BALISEP_FILE_ALPHA:-BALISEP_ALPHA.txt}
-export PRETTY_SORT="TBTNIV, Bal."
+export PRETTY_SORT="TBTNIV > Bal."
 cat $TMP | sort -k2,2n -k3,3 -k1,1 | cut -d' ' -f 1,3-5 | awk -f pretty.awk > $PRETTY_FILE
 
 PRETTY_FILE=${BALISEP_FILE_NUMBER:-BALISEP_NUMBER.txt}
-PRETTY_SORT="Nb., TBTNIV, Bal."
+PRETTY_SORT="Nb. > TBTNIV > Bal."
 cat $TMP | sort -k4,4n -k2,2n -k3,3 -k1,1 | cut -d' ' -f 1,3-5 | awk -f pretty.awk > $PRETTY_FILE
