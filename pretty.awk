@@ -9,6 +9,5 @@ BEGIN {
 }
 
 END {
-	#print "> [" ENVIRON["OUTPUT_FILE"] "]: OK" > "/dev/stderr"
-	printf("> [%s]: OK\n", ENVIRON["PRETTY_FILE"]) > "/dev/stderr"
+	printf("> tri \"%s\" dans [%s]: OK\n", ENVIRON["PRETTY_SORT"], ENVIRON["PRETTY_FILE"]) > "/dev/stderr"
 }
