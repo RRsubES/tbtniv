@@ -1,7 +1,8 @@
 # input: (sorted) BEACON TBTNIV NUMBER_OF_BEACONS_USING_THIS_TBTNIV TOTAL_NUMBER_OF_DIFFERENT_TBTNIV
 # output:
 BEGIN {
-	printf("%-5s %-39s %3s %3s\n", "Bal.", "TBTNIV", "Nb.", "Tot") 
+	printf("TBTNIV au %s, classement %s\n", ENVIRON["DATE_CA"], ENVIRON["PRETTY_SORT"])
+	printf("%-5s %-39s %3s %3s\n", "Bal.", "Tbtniv", "Nb.", "Tot") 
 }
 
 {
