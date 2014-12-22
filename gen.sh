@@ -14,11 +14,16 @@ if [ -p /dev/stdin -o -t 0 ]; then
 fi
 
 OVERWRITE=1
+TAG=
 while (( $# > 0 )); do
 	case $1 in
 		-c|--checkfile)
 			shift
 			OVERWRITE=0;;
+		-t|--tag)
+			shift
+			TAG=_$1
+			shift;;
 		-h|--help|*)
 			usage;;
 	esac
@@ -43,7 +48,7 @@ read HEADER
 DATE_CA=$(echo $HEADER | awk '{print $7}')
 echo ">> date CA: ${DATE_CA}" >&2
 
-PRETTY_FILE=BALISEP_TB_${DATE_CA}.txt
+PRETTY_FILE=BALISEP${TAG}_TB_${DATE_CA}.txt
 PRETTY_SORT="Tbtniv > Bal."
 check_dst_file 
 grep '^3[ 12][A-Z0-9]\{2,5\} .*$' |
@@ -54,7 +59,7 @@ grep '^3[ 12][A-Z0-9]\{2,5\} .*$' |
  cut -d' ' -f 1,3-5 |
  awk -f pretty.awk > $PRETTY_FILE
 
-PRETTY_FILE=BALISEP_NTB_${DATE_CA}.txt
+PRETTY_FILE=BALISEP${TAG}_NTB_${DATE_CA}.txt
 PRETTY_SORT="Nb. > Tbtniv > Bal."
 check_dst_file
 cat $TMP | sort -k4,4n -k2,2n -k3,3 -k1,1 | cut -d' ' -f 1,3-5 | awk -f pretty.awk > $PRETTY_FILE
