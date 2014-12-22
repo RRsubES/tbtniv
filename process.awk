@@ -7,17 +7,15 @@ BEGIN {
 {
 	name=$1; layers=$2
 	db[layers][name]=$3
+	if (!count[layers])
+		total++
 	count[layers]++
 }
 
 END {
 	for (t in db) {
-		total++
-		suffix[t]=sprintf("%s %d", t, count[t])
-	}
-	for (t in db) {
 		for (n in db[t]) 
-			printf("%s %d %s %d\n", n, db[t][n], suffix[t], total) 
+			printf("%s %d %s %d %d\n", n, db[t][n], t, count[t], total) 
 
 	}
 }
