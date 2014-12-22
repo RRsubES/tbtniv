@@ -6,16 +6,18 @@ BEGIN {
 
 {
 	name=$1; layers=$2
-	db[layers][name]=$3
-	if (!count[layers])
-		total++
+	nb[layers][name]=$3
 	count[layers]++
 }
 
 END {
-	for (t in db) {
-		for (n in db[t]) 
-			printf("%s %d %s %d %d\n", n, db[t][n], t, count[t], total) 
+	for (t in nb) {
+		total++
+		t_count[t]=sprintf("%s %d", t, count[t])
+	}
+	for (t in nb) {
+		for (n in nb[t]) 
+			printf("%s %d %s %d %d\n", n, nb[t][n], t_count[t], total) 
 
 	}
 }
