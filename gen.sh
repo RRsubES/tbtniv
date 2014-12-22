@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function usage {
-	echo ">> usage: ./$(basename $0) [-c|--checkfile] < BALISEP_FILE" >&2
+	echo ">> usage: ./$(basename $0) [-c|--checkfile] [-t|--tag TAG] < BALISEP_FILE" >&2
 	exit 1
 
 }
