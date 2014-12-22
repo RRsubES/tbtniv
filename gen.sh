@@ -45,5 +45,4 @@ grep '^3[ 12][A-Z0-9]\{2,5\} .*$' |
 PRETTY_FILE=BALISEP_NTB_${DATE_CA}.txt
 PRETTY_SORT="Nb. > Tbtniv > Bal."
 check_file $PRETTY_FILE
-
 cat $TMP | sort -k4,4n -k2,2n -k3,3 -k1,1 | cut -d' ' -f 1,3-5 | awk -f pretty.awk > $PRETTY_FILE
