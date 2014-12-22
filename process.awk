@@ -17,7 +17,7 @@ END {
 	}
 	for (t in nb) {
 		for (n in nb[t]) 
-			printf("%s %d %s %d %d\n", n, nb[t][n], t_count[t], total) 
+			printf("%s %d %s %d\n", n, nb[t][n], t_count[t], total) 
 
 	}
 }
