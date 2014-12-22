@@ -1,6 +1,7 @@
 # input: 3 4G 115 SR... or 314G *** PX...
 # output: BEACON LVLS_SEPARATED_BY_HYPHEN NUMBER_OF_LVLS
 {
+	sub(/\*\*\*/, "999", $0)
 	if (substr($0, 2, 1) == " ")
 		name=$2
 	else

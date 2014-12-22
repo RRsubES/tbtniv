@@ -15,7 +15,7 @@ echo ">> date CA: ${DATE_CA}" >&2
 
 PRETTY_FILE=BALISEP_TB_${DATE_CA}.txt
 PRETTY_SORT="Tbtniv > Bal."
-awk -f filter.awk | 
+grep '^3[ 12][A-Z0-9]\{2,5\} .*$' |
  awk -f extract.awk |
  awk -f process.awk |
  tee $TMP |
