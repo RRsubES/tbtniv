@@ -22,7 +22,7 @@ while (( $# > 0 )); do
 			OVERWRITE=0;;
 		-t|--tag)
 			shift
-			TAG=_$1
+			TAG=_${1:-notag}
 			shift;;
 		-h|--help|*)
 			usage;;
