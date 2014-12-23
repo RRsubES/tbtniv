@@ -8,7 +8,7 @@ function usage {
 # checks if there is sthg redirected
 # -p /dev/stdin checks if stdin is an opened pipe
 # -t 0 checks if stdin is a terminal
-if [ -p /dev/stdin -o -t 0 ]; then
+if [ -t 0 ]; then
 	usage
 fi
 
@@ -33,6 +33,11 @@ export PRETTY_FILE
 export PRETTY_SORT
 
 read HEADER
+{ echo $HEADER | grep '^FORMAT : STIP VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} PART : BALISEP .*$'; } > /dev/null
+if [ $? -ne 0 ]; then
+	echo ">> entête de fichier non valide" >&2
+	exit 3
+fi
 DATE_CA=$(echo $HEADER | awk '{print $7}')
 echo ">> date CA: ${DATE_CA}" >&2
 
