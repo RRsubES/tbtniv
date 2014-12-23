@@ -1,14 +1,28 @@
 # input: (sorted) BEACON TBTNIV NUMBER_OF_BEACONS_USING_THIS_TBTNIV TOTAL_NUMBER_OF_DIFFERENT_TBTNIV
 # output:
+function multpow2(c, order)
+{
+	s = c
+	for(i = 0; i < order; i++)
+		s = s "" s
+	return s
+}
+
 function mult(c, n)
 {
-	if (n > 1) {
-		if (n % 2 == 1)
-			return c""mult(c,n-1)
-		s = mult(c, n/2)
-		return s""s
+	pm = int(log(n)/log(2))
+	o = pm
+	p = 2**pm
+	s = ""
+	while(p >= 1) {
+		if (p <= n) {
+			s = s "" multpow2(c, o)
+			n = n - p
+		}
+		o--
+		p=p/2
 	}
-	return (n == 1) ? c : ""
+	return s
 }
 
 BEGIN {
