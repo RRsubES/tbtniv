@@ -9,13 +9,8 @@ function mult(c, n)
 		l*=2
 	}
 	n-=l
-	while (n > 0) {
-		if (l <= n) {
-			s = s "" substr(s, 0, l)
-			n-=l
-		}
-		l/=2
-	}
+	if (n > 0)
+		s = s "" substr(s, 0, n)
 	return s
 }
 
