@@ -2,6 +2,8 @@
 
 function usage {
 	echo ">> usage: ./$(basename $0) [-e|--extrainfo] [-t|--tag TAG] < BALISEP_FILE" >&2
+	echo ">> e.g.: ./$(basename $0) --extrainfo --tag IBP < BALISEP"
+	echo ">> e.g.: ./$(basename $0) -t \\\${DATE_DELIVER} < BALISEP"
 	exit 1
 }
 
@@ -41,7 +43,7 @@ TMP="/tmp/tbtniv.$(date '+%0d%0b%Y-%0kh%0M').tmp"
 read HEADER
 { echo $HEADER | grep '^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP.*$'; } > /dev/null
 if [ $? -ne 0 ]; then
-	echo ">> entête de fichier non valide" >&2
+	echo ">> [ERROR]: entête de fichier non valide" >&2
 	exit 3
 fi
 DATE_CA=$(echo $HEADER | awk '{print $7}')
@@ -49,7 +51,7 @@ DATE_DELIVER=$(echo $HEADER | awk '{print $10 }')
 echo ">> date CA: ${DATE_CA}" >&2
 echo ">> date Livraison: ${DATE_DELIVER}" >&2
 
-PRETTY_FILE=BALISEP_TB_${DATE_CA}${TAG}.txt
+PRETTY_FILE=BALISEP_TB_${DATE_CA}$(eval echo ${TAG}).txt
 PRETTY_SORT="Tbtniv > Bal."
 grep '^3[ 12][A-Z0-9]\{2,5\} .*$' |
  awk -f extract.awk |
@@ -59,7 +61,7 @@ grep '^3[ 12][A-Z0-9]\{2,5\} .*$' |
  cut -d' ' -f 1,3-5 |
  awk -f pretty.awk > $PRETTY_FILE
 
-PRETTY_FILE=BALISEP_NTB_${DATE_CA}${TAG}.txt
+PRETTY_FILE=BALISEP_NTB_${DATE_CA}$(eval echo ${TAG}).txt
 PRETTY_SORT="Nb. > Tbtniv > Bal."
 cat $TMP |
  sort -k4,4n -k2,2n -k3,3 -k1,1 |
