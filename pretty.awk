@@ -2,6 +2,7 @@
 # output:
 function mult(c, n)
 {
+	# n must be positive
 	l = 1
 	s = c
 	while (2*l <= n) {
@@ -15,8 +16,8 @@ function mult(c, n)
 }
 
 BEGIN {
-	printf("TBTNIV au %s, classement [%s]\n%s\n", ENVIRON["DATE_CA"], ENVIRON["PRETTY_SORT"], mult("-", 53))
-	printf("%-5s %-39s %3s %3s\n", "Bal.", "Tbtniv", "Nb.", "Tot") 
+	printf("TBTNIV au %s\nClassement [%s]\n\n", ENVIRON["DATE_CA"], ENVIRON["PRETTY_SORT"])
+	printf("%-5s %-39s %3s %3s\n%s\n", "Bal.", "Tbtniv", "Nb.", "Tot", mult("-", 53)) 
 }
 
 {
