@@ -6,6 +6,10 @@ function msg {
 	echo ">> $1"
 } >&2
 
+function err {
+	msg "[ERROR]: $1"
+}
+
 function usage {
 	msg "usage: ./$(basename $0) [-e|--extrainfo] [-t|--tag TAG] < BALISEP_FILE" 
 	msg "e.g.: ./$(basename $0) --extrainfo --tag IBP < BALISEP" 
@@ -36,7 +40,7 @@ while (( $# > 0 )); do
 			if [ -e "$1" ]; then
 				exec < "$1"
 			else
-				msg "euh, kezako: \"$1\"?" 
+				err "euh, kezako: \"$1\"?" 
 				usage
 			fi
 			shift;;
@@ -63,7 +67,7 @@ exec < $TMP
 read HEADER
 { echo $HEADER | grep '^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ \t]*$'; } > /dev/null
 if [ $? -ne 0 ]; then
-	msg "[ERROR]: entête de fichier non valide" 
+	err "entête de fichier non valide" 
 	exit 3
 fi
 DATE_CA=$(echo $HEADER | awk '{print $7}')
