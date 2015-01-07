@@ -1,4 +1,6 @@
 #!/bin/bash
+# NE PAS MODIFIER DIRECTEMENT SUR LE RESEAU, UTILISER push.sh...
+# sinon le statut exécutable saute.
 
 function usage {
 	echo ">> usage: ./$(basename $0) [-e|--extrainfo] [-t|--tag TAG] < BALISEP_FILE" >&2
