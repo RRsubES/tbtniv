@@ -42,8 +42,11 @@ done
 #TMP="/tmp/tbtniv.$$.tmp"
 TMP="/tmp/tbtniv.$(date '+%0d%0b%Y-%0kh%0M').tmp"
 
+sed 's/\r//g' > $TMP
+exec < $TMP
 read HEADER
-{ echo $HEADER | grep '^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP.*$'; } > /dev/null
+echo ">>> $HEADER" >&2
+{ echo $HEADER | grep '^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ \t]*$'; } > /dev/null
 if [ $? -ne 0 ]; then
 	echo ">> [ERROR]: entête de fichier non valide" >&2
 	exit 3
@@ -55,7 +58,8 @@ echo ">> date Livraison: ${DATE_DELIVER}" >&2
 
 PRETTY_FILE=BALISEP_TB_${DATE_CA}$(eval echo ${TAG}).txt
 PRETTY_SORT="Tbtniv > Bal."
-grep '^3[ 12][A-Z0-9]\{2,5\} .*$' |
+sed 's/\r//g' |
+ grep '^3[ 12][A-Z0-9]\{2,5\} .*$' |
  awk -f extract.awk |
  awk -f process.awk |
  tee $TMP |
