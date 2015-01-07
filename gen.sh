@@ -3,18 +3,12 @@
 # sinon le statut exécutable saute.
 
 function usage {
-	echo ">> usage: ./$(basename $0) [-e|--extrainfo] [-t|--tag TAG] < BALISEP_FILE" >&2
-	echo ">> e.g.: ./$(basename $0) --extrainfo --tag IBP < BALISEP"
+	echo ">> usage: ./$(basename $0) [-e|--extrainfo] [-t|--tag TAG] < BALISEP_FILE" 
+	echo ">> e.g.: ./$(basename $0) --extrainfo --tag IBP < BALISEP" 
 	echo ">> e.g.: ./$(basename $0) -t \\\${DATE_DELIVER} < BALISEP"
 	exit 1
-}
+} >&2
 
-# checks if there is sthg redirected
-# -p /dev/stdin checks if stdin is an opened pipe
-# -t 0 checks if stdin is a terminal
-if [ -t 0 ]; then
-	usage
-fi
 
 export DATE_CA
 export DATE_DELIVER
@@ -24,6 +18,7 @@ export PRETTY_EXTRAINFO
 
 TAG=
 PRETTY_EXTRAINFO=0
+FILE=
 while (( $# > 0 )); do
 	case $1 in
 		-t|--tag)
@@ -33,15 +28,34 @@ while (( $# > 0 )); do
 		-e|--extrainfo)
 			PRETTY_EXTRAINFO=1
 			shift;;
-		-h|--help|*)
+		-h|--help)
 			usage;;
+		*)
+			if [ ! -e "$1" ]; then
+				echo ">> euh, kezako: \"$1\"?" >&2
+				usage
+			fi
+			FILE=$1
+			shift;;
 	esac
 done
+
+# checks if there is sthg redirected
+# -p /dev/stdin checks if stdin is an opened pipe
+# -t 0 checks if stdin is a terminal
+if [ -z "$FILE" ]; then
+	if [ -t 0 ]; then
+		usage
+	fi
+else
+	exec < $FILE
+fi
 
 #TMP=$(mktemp tbtniv.XXXX.tmp)
 #TMP="/tmp/tbtniv.$$.tmp"
 TMP="/tmp/tbtniv.$(date '+%0d%0b%Y-%0kh%0M').tmp"
 
+# delete \r chars
 sed 's/\r//g' > $TMP
 exec < $TMP
 read HEADER
