@@ -2,13 +2,16 @@
 # NE PAS MODIFIER DIRECTEMENT SUR LE RESEAU, UTILISER push.sh...
 # sinon le statut exécutable saute.
 
-function usage {
-	echo ">> usage: ./$(basename $0) [-e|--extrainfo] [-t|--tag TAG] < BALISEP_FILE" 
-	echo ">> e.g.: ./$(basename $0) --extrainfo --tag IBP < BALISEP" 
-	echo ">> e.g.: ./$(basename $0) -t \\\${DATE_DELIVER} < BALISEP"
-	exit 1
+function msg {
+	echo ">> $1"
 } >&2
 
+function usage {
+	msg "usage: ./$(basename $0) [-e|--extrainfo] [-t|--tag TAG] < BALISEP_FILE" 
+	msg "e.g.: ./$(basename $0) --extrainfo --tag IBP < BALISEP" 
+	msg "e.g.: ./$(basename $0) -t \\\${DATE_DELIVER} < BALISEP"
+	exit 1
+} 
 
 export DATE_CA
 export DATE_DELIVER
@@ -18,7 +21,6 @@ export PRETTY_EXTRAINFO
 
 TAG=
 PRETTY_EXTRAINFO=0
-FILE=
 while (( $# > 0 )); do
 	case $1 in
 		-t|--tag)
@@ -31,11 +33,12 @@ while (( $# > 0 )); do
 		-h|--help)
 			usage;;
 		*)
-			if [ ! -e "$1" ]; then
-				echo ">> euh, kezako: \"$1\"?" >&2
+			if [ -e "$1" ]; then
+				exec < "$1"
+			else
+				msg "euh, kezako: \"$1\"?" 
 				usage
 			fi
-			FILE=$1
 			shift;;
 	esac
 done
@@ -43,12 +46,8 @@ done
 # checks if there is sthg redirected
 # -p /dev/stdin checks if stdin is an opened pipe
 # -t 0 checks if stdin is a terminal
-if [ -z "$FILE" ]; then
-	if [ -t 0 ]; then
-		usage
-	fi
-else
-	exec < $FILE
+if [ -t 0 ]; then
+	usage
 fi
 
 #TMP=$(mktemp tbtniv.XXXX.tmp)
@@ -57,18 +56,20 @@ TMP="/tmp/tbtniv.$(date '+%0d%0b%Y-%0kh%0M').tmp"
 
 # delete \r chars
 sed 's/\r//g' > $TMP
+# redirects it to stdin again...
 exec < $TMP
+
+# normal process:
 read HEADER
-echo ">>> $HEADER" >&2
 { echo $HEADER | grep '^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ \t]*$'; } > /dev/null
 if [ $? -ne 0 ]; then
-	echo ">> [ERROR]: entête de fichier non valide" >&2
+	msg "[ERROR]: entête de fichier non valide" 
 	exit 3
 fi
 DATE_CA=$(echo $HEADER | awk '{print $7}')
 DATE_DELIVER=$(echo $HEADER | awk '{print $10 }')
-echo ">> date CA: ${DATE_CA}" >&2
-echo ">> date Livraison: ${DATE_DELIVER}" >&2
+msg "date CA: ${DATE_CA}" 
+msg "date Livraison: ${DATE_DELIVER}" 
 
 PRETTY_FILE=BALISEP_TB_${DATE_CA}$(eval echo ${TAG}).txt
 PRETTY_SORT="Tbtniv > Bal."
