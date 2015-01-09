@@ -74,8 +74,8 @@ PRETTY_FILE="BALISEP_TB_${DATE_CA}$(eval echo ${TAG}).txt"
 PRETTY_SORT="Tbtniv > Bal."
 sed 's/\r//g' |
 # [A-Z0-9*]\{1,2\} because some sectors have a single letter name
-#grep '^3[ 12][A-Z0-9]\{2,5\} \+\([0-9*]\{3\} [A-Z0-9*]\{1,2\} \+\)\{1,3\}$' |
- grep '^3[ 12][A-Z0-9]\{2,5\}.*$' |
+ grep '^3[ 12][A-Z0-9]\{2,5\} \+\([0-9*]\{3\} [A-Z0-9*]\{1,2\} \+\)\{1,3\}$' |
+#grep '^3[ 12][A-Z0-9]\{2,5\}.*$' |
  awk -f extract.awk |
  awk -f process.awk |
  tee $TMP |
