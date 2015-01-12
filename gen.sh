@@ -12,7 +12,7 @@ function err {
 
 function usage {
 	msg "usage: ./$(basename $0) [-e] [-t TAG] < BALISEP_FILE" 
-	msg "-e: DATE_CA et DATE_DELIVER ajoutés à l'entête"
+	msg "-e: DATE_CA et DATE_DELIVER ajoutées à l'entête"
 	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur"
 	msg "e.g.: ./$(basename $0) -e -t IBP < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t \\\${DATE_DELIVER} < BALISEP"
@@ -20,7 +20,7 @@ function usage {
 } 
 
 # parsing with a function call, be lazy!
-function get_dates {
+function get_dates_from_header {
 	DATE_CA=$7
 	DATE_DELIVER=${10}
 }
@@ -57,15 +57,15 @@ fi
 TMP="/tmp/tbtniv.$(date '+%0d%0b%Y-%0kh%0M').tmp"
 
 # normal process:
-read HEADER
 HEADER_TEMPLATE='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
+read HEADER
 { echo $HEADER | sed 's/\r//g' | grep "$HEADER_TEMPLATE"; } > /dev/null
 if [ $? -ne 0 ]; then
 	err "entête de fichier non valide, forme retenue:" 
 	err "$(echo ${HEADER_TEMPLATE:1:${#HEADER_TEMPLATE}-2} | sed 's/\\//g')"
 	exit 3
 fi
-get_dates $HEADER
+get_dates_from_header $HEADER
 msg "date CA: ${DATE_CA}" 
 msg "date Livraison: ${DATE_DELIVER}" 
 
