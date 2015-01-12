@@ -11,8 +11,10 @@ function err {
 }
 
 function usage {
-	msg "usage: ./$(basename $0) [-e|--extrainfo] [-t|--tag TAG] < BALISEP_FILE" 
-	msg "e.g.: ./$(basename $0) --extrainfo --tag IBP < BALISEP" 
+	msg "usage: ./$(basename $0) [-e] [-t TAG] < BALISEP_FILE" 
+	msg "-e: DATE_CA et DATE_DELIVER ajoutés à l'entête"
+	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur"
+	msg "e.g.: ./$(basename $0) -e -t IBP < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t \\\${DATE_DELIVER} < BALISEP"
 	exit 1
 } 
@@ -25,26 +27,19 @@ export PRETTY_EXTRAINFO
 
 TAG=
 PRETTY_EXTRAINFO=0
-while (( $# > 0 )); do
-	case $1 in
-		-t|--tag)
-			shift
-			TAG=_${1:-notag}
-			shift;;
-		-e|--extrainfo)
+while getopts ":t:eh" opt; do
+	case $opt in
+		t)
+			TAG=_${OPTARG:-notag}
+			;;
+		e)
 			PRETTY_EXTRAINFO=1
-			shift;;
-		-h|--help)
-			usage;;
-		*)
-			if [ -e "$1" ]; then
-				exec < "$1"
-			else
-				err "euh, kezako: \"$1\"?" 
-				usage
-			fi
-			shift;;
+			;;
+		:|\?|h)
+			usage
+			;;
 	esac
+
 done
 
 # checks if there is sthg redirected
@@ -60,7 +55,7 @@ TMP="/tmp/tbtniv.$(date '+%0d%0b%Y-%0kh%0M').tmp"
 
 # normal process:
 read HEADER
-{ echo $HEADER | sed 's/\r//g' | grep '^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ \t]*$'; } > /dev/null
+{ echo $HEADER | sed 's/\r//g' | grep '^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'; } > /dev/null
 if [ $? -ne 0 ]; then
 	err "entête de fichier non valide" 
 	exit 3
