@@ -19,6 +19,12 @@ function usage {
 	exit 1
 } 
 
+# parsing with a function call, be lazy!
+function get_dates {
+	DATE_CA=$7
+	DATE_DELIVER=${10}
+}
+
 export DATE_CA
 export DATE_DELIVER
 export PRETTY_FILE
@@ -30,17 +36,14 @@ PRETTY_EXTRAINFO=0
 while getopts ":t:eh" opt; do
 	case $opt in
 		t)
-			TAG=_${OPTARG:-notag}
-			;;
+			TAG=_${OPTARG:-notag};;
 		e)
-			PRETTY_EXTRAINFO=1
-			;;
-		:|\?|h)
-			usage
-			;;
+			PRETTY_EXTRAINFO=1;;
+		\:|\?|h)
+			usage;;
 	esac
-
 done
+shift $(($OPTIND - 1))
 
 # checks if there is sthg redirected
 # -p /dev/stdin checks if stdin is an opened pipe
@@ -55,13 +58,14 @@ TMP="/tmp/tbtniv.$(date '+%0d%0b%Y-%0kh%0M').tmp"
 
 # normal process:
 read HEADER
-{ echo $HEADER | sed 's/\r//g' | grep '^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'; } > /dev/null
+HEADER_TEMPLATE='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
+{ echo $HEADER | sed 's/\r//g' | grep "$HEADER_TEMPLATE"; } > /dev/null
 if [ $? -ne 0 ]; then
-	err "entête de fichier non valide" 
+	err "entête de fichier non valide, forme retenue:" 
+	err "$(echo ${HEADER_TEMPLATE:1:${#HEADER_TEMPLATE}-2} | sed 's/\\//g')"
 	exit 3
 fi
-DATE_CA=$(echo $HEADER | awk '{print $7}')
-DATE_DELIVER=$(echo $HEADER | awk '{print $10 }')
+get_dates $HEADER
 msg "date CA: ${DATE_CA}" 
 msg "date Livraison: ${DATE_DELIVER}" 
 
