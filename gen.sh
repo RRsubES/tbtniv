@@ -12,9 +12,13 @@ function err {
 
 function usage {
 	msg "usage: ./$(basename $0) [-e] [-t TAG] < BALISEP_FILE" 
-	msg "-e: DATE_CA et DATE_DELIVER ajoutées à l'entête"
+	msg ""
+	msg "-e    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
 	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur"
-	msg "e.g.: ./$(basename $0) -e -t IBP < BALISEP" 
+	msg "        peut être \\\$DATE_DELIVER ou \\\$DATE_CA"
+	msg "        ou du texte brut (sans espace)." 
+	msg ""
+	msg "e.g.: ./$(basename $0) -et IBP < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t \\\${DATE_DELIVER} < BALISEP"
 	exit 1
 } 
