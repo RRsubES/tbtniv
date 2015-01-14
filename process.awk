@@ -1,5 +1,5 @@
 # input: BEACON LVLS_SEPARATED_BY_HYPHEN NUMBER_OF_LVLS
-# output: BEACON NUMBER_OF_LVLS LVLS_SEP_BY_HYPHEN NUMBER_OF_BEACON_USING_THAT_TBTNIV 
+# output: BEACON NUMBER_OF_LVLS LVLS_SEP_BY_HYPHEN NUMBER_OF_BEACON_USING_THAT_TBTNIV
 BEGIN {
 	FS="[ \t]*"
 }
@@ -13,9 +13,9 @@ BEGIN {
 END {
 	for (l in nb)
 		total++
-	printf("%d\n", total)	
+	printf("%d\n", total)
 	for (l in nb) {
-		for (n in nb[l]) 
+		for (n in nb[l])
 			printf("%s %d %s %d\n", n, nb[l][n], l, count[l])
 
 	}
