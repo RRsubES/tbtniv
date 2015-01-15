@@ -1,7 +1,8 @@
 #!/usr/bin/awk -f
-# ./check.sh < BALISEP.jan15 | sort | uniq | wc -l
+# ./count.sh < BALISEP.jan15 | sort | uniq | wc -l
 
 BEGIN {
+	#ignore first line
 	getline
 	GROUND = "000"
 	prev = GROUND
@@ -16,7 +17,6 @@ BEGIN {
 
 /^3[ 12][A-Z0-9]{2,5} .*$/ {
 	sub(/\*\*\*/, "999", $0)
-#print $0
 	if (substr($0, 2, 1) == " ") 
 		start = 3
 	else
