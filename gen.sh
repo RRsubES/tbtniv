@@ -70,14 +70,14 @@ fi
 get_dates_from_header $HEADER
 msg "date CA: ${DATE_CA}" 
 msg "date Livraison: ${DATE_DELIVER}" 
+#evaluate the tag, cannot be done before...
+TAG=$(eval echo $TAG)
 
-PRETTY_FILE="BALISEP_TB_${DATE_CA}$(eval echo ${TAG}).txt"
+PRETTY_FILE="BALISEP_TB_${DATE_CA}${TAG}.txt"
 PRETTY_SORT="Tbtniv > Bal."
 sed 's/\r//g' |
 # [A-Z0-9*]\{1,2\} because some sectors have a single letter name
-#grep '^3[ 12][A-Z0-9]\{2,5\} \+\([0-9*]\{3\} [A-Z0-9*]\{1,2\} \+\)\{1,3\}$' |
  grep '^3[ 12][A-Z0-9]\{2,5\} \+\(\(\*\*\*\|[0-9]\{3\}\) \(\*\*\|[A-Z0-9]\{1,2\}\) \+\)\{1,3\}$' |
-#grep '^3[ 12][A-Z0-9]\{2,5\}.*$' |
  awk -f extract.awk |
  awk -f process.awk |
  tee "$TMP" |
@@ -85,7 +85,7 @@ sed 's/\r//g' |
  cut -d' ' -f 1,3-5 |
  awk -f pretty.awk > "$PRETTY_FILE"
 
-PRETTY_FILE="BALISEP_NTB_${DATE_CA}$(eval echo ${TAG}).txt"
+PRETTY_FILE="BALISEP_NTB_${DATE_CA}${TAG}.txt"
 PRETTY_SORT="Nb. > Tbtniv > Bal."
 cat "$TMP" |
  sort -k4,4n -k2,2n -k3,3 -k1,1 |
