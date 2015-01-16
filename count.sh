@@ -1,5 +1,8 @@
 #!/usr/bin/awk -f
+# counts the nb of distinct tbtniv
 # ./count.sh < BALISEP.jan15 | sort | uniq | wc -l
+# to show stats about tbtniv, sorted...
+# ./count.sh < BALISEP.jan15 | sort -k2,2n | uniq -c | sort -k1,1n
 
 BEGIN {
 	#ignore first line
@@ -9,9 +12,10 @@ BEGIN {
 }
 
 /^1 [A-Z0-9]{2,5} .*$/ {
-	if (prev != GROUND)
+	if (prev != GROUND) {
 		print prev
-	prev = GROUND
+		prev = GROUND
+	}
 	next
 }
 
@@ -26,7 +30,5 @@ BEGIN {
 }
 
 END {
-	if (prev != GROUND) 
-		print prev
-
+	print prev
 }
