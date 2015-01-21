@@ -1,1 +1,1 @@
-tar cvf arch.tar.gz ./* ./.git ../tbtniv.data
+tar cvf ../tbtniv.tar.gz -C ../ ./tbtniv ./tbtniv.data
