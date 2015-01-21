@@ -73,7 +73,8 @@ get_dates_from_header $HEADER
 msg "date CA: ${DATE_CA}" 
 msg "date Livraison: ${DATE_DELIVER}" 
 #evaluate the tag, cannot be done before...
-TAG=_${!TAG:-$TAG}
+#replace TAG with the variable content if needed, otherwise add _TAG or nothing
+TAG=${TAG:+_${!TAG:-$TAG}}
 
 PRETTY_FILE="BALISEP_TB_${DATE_CA}${TAG}.txt"
 PRETTY_SORT="Tbtniv > Bal."
