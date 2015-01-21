@@ -14,12 +14,14 @@ function usage {
 	msg "usage: ./$(basename $0) [-e] [-t TAG] < BALISEP_FILE" 
 	msg ""
 	msg "-e    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
-	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur"
-	msg "        peut être \\\$DATE_DELIVER ou \\\$DATE_CA"
-	msg "        ou du texte brut (sans espace)." 
+	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
+	msg "        peut être DATE_DELIVER ou DATE_CA ou du texte"
+	msg "        brut (sans espace)." 
 	msg ""
-	msg "e.g.: ./$(basename $0) -et IBP < BALISEP" 
-	msg "e.g.: ./$(basename $0) -t \\\${DATE_DELIVER} < BALISEP"
+	msg "e.g.: ./$(basename $0) -et ibp < BALISEP" 
+	msg "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
+	msg "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
+	msg "e.g.: ./$(basename $0) -t DATE_CA < BALISEP"
 	exit 1
 } 
 
@@ -40,7 +42,7 @@ PRETTY_EXTRAINFO=0
 while getopts ":t:eh" opt; do
 	case $opt in
 		t)
-			TAG=_${OPTARG:-notag};;
+			TAG=${OPTARG:-notag};;
 		e)
 			PRETTY_EXTRAINFO=1;;
 		\:|\?|h)
@@ -71,7 +73,7 @@ get_dates_from_header $HEADER
 msg "date CA: ${DATE_CA}" 
 msg "date Livraison: ${DATE_DELIVER}" 
 #evaluate the tag, cannot be done before...
-TAG=$(eval echo $TAG)
+TAG=_${!TAG:-$TAG}
 
 PRETTY_FILE="BALISEP_TB_${DATE_CA}${TAG}.txt"
 PRETTY_SORT="Tbtniv > Bal."
