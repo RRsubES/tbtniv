@@ -10,10 +10,7 @@ function lvl(l) # returns the number of levels in the template
 	# replace first occurence of *** with 999
 	sub(/\*\*\*/, "999", $0)
 
-	if (substr($0, 2, 1) == " ")
-		name=$2
-	else
-		name=substr($1,3)
+	name = (substr($0, 2, 1) == " " ? $2 : substr($1, 3));
 
 	s=substr($0, 9)
 	if (!(name in layers))
