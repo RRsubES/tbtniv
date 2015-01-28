@@ -28,11 +28,8 @@ BEGIN {
 
 /^3[ 12][A-Z0-9]{2,5} .*$/ {
 	sub(/\*\*\*/, "999", $0)
-	if (substr($0, 2, 1) == " ") 
-		start = 3
-	else
-		start = 2
-	for(i=start; i < NF; i+=2)
+	# is the pattern like 31AB or 3 AB, how to start...
+	for(i = (substr($0, 2, 1) == " " ? 3 : 2); i < NF; i+=2)
 		prev = prev "-" $i
 }
 
