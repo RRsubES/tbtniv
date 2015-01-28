@@ -3,6 +3,7 @@
 # ./count.sh < BALISEP.jan15 | sort | uniq | wc -l
 # to show stats about tbtniv, sorted...
 # ./count.sh < BALISEP.jan15 | sort -k2,2n | uniq -c | sort -k1,1n
+# ./count.sh < BALISEP.jan15 | cut -c -7,12-
 function lvl(t) {
 	return (length(t) + 1) / 4
 }
