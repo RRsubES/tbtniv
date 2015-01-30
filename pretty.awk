@@ -16,7 +16,7 @@ function pr(hdr, bcns) {
 	if (hdr == "" && bcns == "")
 		return
 	printf("%43s %s\n", hdr, substr(bcns, 0, length(bcns) - 1))
-	if (ENVIRON["PRETTY_EMPTYLINE"] == "1")
+	if (ENVIRON["PRETTY_EMPTYLINE"])
 		printf("\n")
 }
 
@@ -27,8 +27,7 @@ function beacon_add(bcn) {
 pv_tbtniv == $2 {
 	if (length(beacons) >= MAXLEN) {
 		pr(header, beacons)
-		beacons = ""
-		beacon_add($1)
+		beacons = ""; beacon_add($1)
 		header = sprintf("%39s %3s", "\"", "\"")
 	} else
 		beacon_add($1)
@@ -37,9 +36,11 @@ pv_tbtniv == $2 {
 
 {
 	pr(header, beacons)
+	if (NR > 2 && ENVIRON["PRETTY_SPLIT"] == "1" && ENVIRON["PRETTY_EMPTYLINE"] =="0")
+		printf("\n")
+
 	pv_tbtniv = $2
-	beacons = ""
-	beacon_add($1)
+	beacons = ""; beacon_add($1)
 	header = sprintf("%39s %3d", $2, $3)
 }
 
