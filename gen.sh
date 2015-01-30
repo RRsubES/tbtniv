@@ -11,7 +11,7 @@ function err {
 }
 
 function usage {
-	msg "usage: ./$(basename $0) [-e] [-t TAG] < BALISEP_FILE" 
+	msg "usage: ./$(basename $0) [-e|-s] [-l LEN] [-t TAG] < BALISEP_FILE" 
 	msg ""
 	msg "-e    : separe les lignes par une interligne vide"
 	msg "-s    : separe les blocs par une interligne vide"
