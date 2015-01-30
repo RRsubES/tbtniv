@@ -5,14 +5,43 @@ BEGIN {
 		printf("Date CA du %s\nLivraison le %s\nClassement [%s]\n\n",
 			ENVIRON["DATE_CA"], ENVIRON["DATE_DELIVER"], ENVIRON["PRETTY_SORT"])
 	getline # to read first special line and get total nb of tbtniv
-	printf("%-5s %-39s %3s\n", "Bal.", 
-			sprintf("Tbtniv (%d distinct(s))", $1), "Nb.") 
+	printf("%39s %-3s %s\n", sprintf("Tbtniv (%d distinct(s))", $1), "Nb.", "Balises")
+	pv_tbtniv = ""
+	beacons = ""
+	header = ""
+	MAXLEN = ENVIRON["PRETTY_MAXLEN"]
+}
+
+function pr(hdr, bcns) {
+	if (hdr == "" && bcns == "")
+		return
+	printf("%43s %s\n", hdr, substr(bcns, 0, length(bcns) - 1))
+}
+
+function beacon_add(bcn) {
+	beacons = beacons sprintf("%-5s ", bcn)
+}
+
+pv_tbtniv == $2 {
+	if (length(beacons) >= MAXLEN) {
+		pr(header, beacons)
+		beacons = ""
+		beacon_add($1)
+		header = sprintf("%39s %3s", "\"", "\"")
+	} else
+		beacon_add($1)
+	next
 }
 
 {
-	printf("%-5s %-39s %3d\n", $1, $2, $3)
+	pr(header, beacons)
+	pv_tbtniv = $2
+	beacons = ""
+	beacon_add($1)
+	header = sprintf("%39s %3d", $2, $3)
 }
 
 END {
+	pr(header, beacons)
 	printf(">> tri \"%s\" dans [%s]\n", ENVIRON["PRETTY_SORT"], ENVIRON["PRETTY_FILE"]) > "/dev/stderr"
 }

@@ -14,6 +14,7 @@ function usage {
 	msg "usage: ./$(basename $0) [-e] [-t TAG] < BALISEP_FILE" 
 	msg ""
 	msg "-e    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
+	msg "-l LEN: taille maximale de la chaine des balises"
 	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
 	msg "        peut être DATE_DELIVER ou DATE_CA ou du texte"
 	msg "        brut (sans espace)." 
@@ -22,6 +23,7 @@ function usage {
 	msg "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
 	msg "e.g.: ./$(basename $0) -t DATE_CA < BALISEP"
+	msg "e.g.: ./$(basename $0) -l 60 < BALISEP"
 	exit 1
 } 
 
@@ -36,15 +38,18 @@ export DATE_DELIVER
 export PRETTY_FILE
 export PRETTY_SORT
 export PRETTY_EXTRAINFO
+export PRETTY_MAXLEN
 
 TAG=
 PRETTY_EXTRAINFO=0
-while getopts ":t:eh" opt; do
+PRETTY_MAXLEN=$((6 * 6))
+while getopts ":t:l:eh" opt; do
 	case $opt in
 		t)
 			TAG=${OPTARG:-notag};;
 		e)
 			PRETTY_EXTRAINFO=1;;
+		l)	PRETTY_MAXLEN=${OPTARG:-PRETTY_MAXLEN};;
 		\:|\?|h)
 			usage;;
 	esac
@@ -74,6 +79,7 @@ msg "date CA: ${DATE_CA}"
 msg "date Livraison: ${DATE_DELIVER}" 
 #evaluate the tag, cannot be done before...
 #replace TAG with the variable content if needed, otherwise add _TAG or nothing
+#!TAG got replaced by the content of the variable whose name is in TAG
 TAG=${TAG:+_${!TAG:-$TAG}}
 
 PRETTY_FILE="BALISEP_TB_${DATE_CA}${TAG}.txt"
