@@ -16,6 +16,8 @@ function pr(hdr, bcns) {
 	if (hdr == "" && bcns == "")
 		return
 	printf("%43s %s\n", hdr, substr(bcns, 0, length(bcns) - 1))
+	if (ENVIRON["PRETTY_EMPTYLINE"] == "1")
+		printf("\n")
 }
 
 function beacon_add(bcn) {

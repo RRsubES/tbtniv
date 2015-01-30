@@ -13,13 +13,14 @@ function err {
 function usage {
 	msg "usage: ./$(basename $0) [-e] [-t TAG] < BALISEP_FILE" 
 	msg ""
-	msg "-e    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
+	msg "-e    : separe les lignes par une interligne vide"
+	msg "-i    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
 	msg "-l LEN: taille maximale de la chaine des balises"
 	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
 	msg "        peut être DATE_DELIVER ou DATE_CA ou du texte"
 	msg "        brut (sans espace)." 
 	msg ""
-	msg "e.g.: ./$(basename $0) -et ibp < BALISEP" 
+	msg "e.g.: ./$(basename $0) -iet ibp < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
 	msg "e.g.: ./$(basename $0) -t DATE_CA < BALISEP"
@@ -39,17 +40,22 @@ export PRETTY_FILE
 export PRETTY_SORT
 export PRETTY_EXTRAINFO
 export PRETTY_MAXLEN
+export PRETTY_EMPTYLINE
 
 TAG=
 PRETTY_EXTRAINFO=0
+PRETTY_EMPTYLINE=0
 PRETTY_MAXLEN=$((6 * 6))
-while getopts ":t:l:eh" opt; do
+while getopts ":t:l:eih" opt; do
 	case $opt in
 		t)
 			TAG=${OPTARG:-notag};;
 		e)
+			PRETTY_EMPTYLINE=1;;
+		i)
 			PRETTY_EXTRAINFO=1;;
-		l)	PRETTY_MAXLEN=${OPTARG:-PRETTY_MAXLEN};;
+		l)
+			PRETTY_MAXLEN=${OPTARG:-PRETTY_MAXLEN};;
 		\:|\?|h)
 			usage;;
 	esac
