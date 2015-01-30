@@ -14,7 +14,8 @@ function usage {
 	msg "usage: ./$(basename $0) [-e] [-t TAG] < BALISEP_FILE" 
 	msg ""
 	msg "-e    : separe les lignes par une interligne vide"
-	msg "-i    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
+	msg "-s    : separe les blocs par une interligne vide"
+	msg "-i    : DATE_CA et DATE_DELyyIVER ajoutées à l'entête"
 	msg "-l LEN: taille maximale de la chaine des balises"
 	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
 	msg "        peut être DATE_DELIVER ou DATE_CA ou du texte"
@@ -41,12 +42,14 @@ export PRETTY_SORT
 export PRETTY_EXTRAINFO
 export PRETTY_MAXLEN
 export PRETTY_EMPTYLINE
+export PRETTY_SPLIT
 
 TAG=
 PRETTY_EXTRAINFO=0
 PRETTY_EMPTYLINE=0
+PRETTY_SPLIT=0
 PRETTY_MAXLEN=$((6 * 6))
-while getopts ":t:l:eih" opt; do
+while getopts ":t:l:eihs" opt; do
 	case $opt in
 		t)
 			TAG=${OPTARG:-notag};;
@@ -56,6 +59,8 @@ while getopts ":t:l:eih" opt; do
 			PRETTY_EXTRAINFO=1;;
 		l)
 			PRETTY_MAXLEN=${OPTARG:-PRETTY_MAXLEN};;
+		s)
+			PRETTY_SPLIT=1;;
 		\:|\?|h)
 			usage;;
 	esac
