@@ -9,7 +9,6 @@ BEGIN {
 	pv_tbtniv = ""
 	beacons = ""
 	header = ""
-	MAXLEN = ENVIRON["PRETTY_MAXLEN"]
 }
 
 function pr(hdr, bcns) {
@@ -25,7 +24,7 @@ function beacon_add(bcn) {
 }
 
 pv_tbtniv == $2 {
-	if (length(beacons) >= MAXLEN) {
+	if (length(beacons) >= ENVIRON["PRETTY_MAXLEN"]) {
 		pr(header, beacons)
 		beacons = ""; beacon_add($1)
 		header = sprintf("%39s %3s", "\"", "\"")
