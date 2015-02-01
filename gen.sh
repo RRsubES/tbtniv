@@ -11,21 +11,21 @@ function err {
 }
 
 function usage {
-	msg "usage: ./$(basename $0) [-e|-s] [-l LEN] [-t TAG] < BALISEP_FILE" 
+	msg "usage: ./$(basename $0) [-eis] [-l LEN] [-t TAG] < BALISEP_FILE" 
 	msg ""
 	msg "-e    : separe les lignes par une interligne vide"
+	msg "-i    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
 	msg "-s    : separe les blocs par une interligne vide"
-	msg "-i    : DATE_CA et DATE_DELyyIVER ajoutées à l'entête"
 	msg "-l LEN: taille maximale de la chaine des balises"
 	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
 	msg "        peut être DATE_DELIVER ou DATE_CA ou du texte"
 	msg "        brut (sans espace)." 
 	msg ""
-	msg "e.g.: ./$(basename $0) -iet ibp < BALISEP" 
+	msg "e.g.: ./$(basename $0) -ie -t ibp < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
 	msg "e.g.: ./$(basename $0) -t DATE_CA < BALISEP"
-	msg "e.g.: ./$(basename $0) -l 60 < BALISEP"
+	msg "e.g.: ./$(basename $0) -sl 60 < BALISEP"
 	exit 1
 } 
 
