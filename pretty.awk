@@ -1,9 +1,6 @@
 # input: (sorted) BEACON TBTNIV NUMBER_OF_BEACONS_USING_THIS_TBTNIV TOTAL_NUMBER_OF_DIFFERENT_TBTNIV
 # output:
 BEGIN {
-	if (ENVIRON["PRETTY_EXTRAINFO"] == 1)
-		printf("Date CA du %s\nLivraison le %s\nClassement [%s]\n\n",
-			ENVIRON["DATE_CA"], ENVIRON["DATE_DELIVER"], ENVIRON["PRETTY_SORT"])
 	getline # to read first special line and get total nb of tbtniv
 	printf("%39s %-3s %s\n", sprintf("Tbtniv(%d)", $1), "Nb.", "Balises")
 	pv_tbtniv = ""

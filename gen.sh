@@ -15,10 +15,9 @@ function perr {
 }
 
 function usage {
-	perr "usage: ./$(basename $0) [-eis] [-l LEN] [-t TAG] < BALISEP_FILE" 
+	perr "usage: ./$(basename $0) [-es] [-l LEN] [-t TAG] < BALISEP_FILE" 
 	perr ""
 	perr "-e    : separe les lignes par une interligne vide"
-	perr "-i    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
 	perr "-s    : separe les blocs par une interligne vide"
 	perr "-l LEN: taille maximale de la chaine des balises )"
 	perr "        (LEN=96 par défaut)"
@@ -26,10 +25,9 @@ function usage {
 	perr "        peut être DATE_DELIVER ou DATE_CA ou du texte"
 	perr "        brut (sans espace)." 
 	perr ""
-	perr "e.g.: ./$(basename $0) -ie -t ibp < BALISEP" 
+	perr "e.g.: ./$(basename $0) -et ibp < BALISEP" 
 	perr "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
 	perr "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
-	perr "e.g.: ./$(basename $0) -t DATE_CA < BALISEP"
 	perr "e.g.: ./$(basename $0) -sl 60 < BALISEP"
 	exit 1
 } 
@@ -44,13 +42,11 @@ export DATE_CA
 export DATE_DELIVER
 export PRETTY_FILE
 export PRETTY_SORT
-export PRETTY_EXTRAINFO
 export PRETTY_MAXLEN
 export PRETTY_EMPTYLINE
 export PRETTY_SPLIT
 
 TAG=
-PRETTY_EXTRAINFO=0
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
 PRETTY_MAXLEN=$((5 * 6))
@@ -60,8 +56,6 @@ while getopts ":t:l:eihs" opt; do
 			TAG=${OPTARG:-notag};;
 		e)
 			PRETTY_EMPTYLINE=1;;
-		i)
-			PRETTY_EXTRAINFO=1;;
 		l)
 			PRETTY_MAXLEN=${OPTARG:-PRETTY_MAXLEN};;
 		s)
