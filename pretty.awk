@@ -27,7 +27,7 @@ pv_tbtniv == $2 {
 	if (length(beacons) + length(sprintf("%6s", $1)) > ENVIRON["PRETTY_MAXLEN"]) {
 		pr(header, beacons)
 		beacons = ""; beacon_add($1)
-		header = sprintf("%39s %3s", "\"", "\"")
+		header = sprintf("%39s %3s", "", "")
 	} else
 		beacon_add($1)
 	next

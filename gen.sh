@@ -2,31 +2,35 @@
 # NE PAS MODIFIER DIRECTEMENT SUR LE RESEAU, UTILISER push.sh...
 # sinon le statut exécutable saute.
 
-function msg {
-	echo ">> $1"
-} >&2
+function info {
+	perr ">> $1"
+}
 
 function err {
-	msg "[ERROR]: $1"
+	perr "[ERR]: $1"
+}
+
+function perr {
+	echo "$1" >&2
 }
 
 function usage {
-	msg "usage: ./$(basename $0) [-eis] [-l LEN] [-t TAG] < BALISEP_FILE" 
-	msg ""
-	msg "-e    : separe les lignes par une interligne vide"
-	msg "-i    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
-	msg "-s    : separe les blocs par une interligne vide"
-	msg "-l LEN: taille maximale de la chaine des balises )"
-	msg "        (LEN=96 par défaut)"
-	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
-	msg "        peut être DATE_DELIVER ou DATE_CA ou du texte"
-	msg "        brut (sans espace)." 
-	msg ""
-	msg "e.g.: ./$(basename $0) -ie -t ibp < BALISEP" 
-	msg "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
-	msg "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
-	msg "e.g.: ./$(basename $0) -t DATE_CA < BALISEP"
-	msg "e.g.: ./$(basename $0) -sl 60 < BALISEP"
+	perr "usage: ./$(basename $0) [-eis] [-l LEN] [-t TAG] < BALISEP_FILE" 
+	perr ""
+	perr "-e    : separe les lignes par une interligne vide"
+	perr "-i    : DATE_CA et DATE_DELIVER ajoutées à l'entête"
+	perr "-s    : separe les blocs par une interligne vide"
+	perr "-l LEN: taille maximale de la chaine des balises )"
+	perr "        (LEN=96 par défaut)"
+	perr "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
+	perr "        peut être DATE_DELIVER ou DATE_CA ou du texte"
+	perr "        brut (sans espace)." 
+	perr ""
+	perr "e.g.: ./$(basename $0) -ie -t ibp < BALISEP" 
+	perr "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
+	perr "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
+	perr "e.g.: ./$(basename $0) -t DATE_CA < BALISEP"
+	perr "e.g.: ./$(basename $0) -sl 60 < BALISEP"
 	exit 1
 } 
 
@@ -49,7 +53,7 @@ TAG=
 PRETTY_EXTRAINFO=0
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
-PRETTY_MAXLEN=$((16 * 6))
+PRETTY_MAXLEN=$((5 * 6))
 while getopts ":t:l:eihs" opt; do
 	case $opt in
 		t)
@@ -87,8 +91,8 @@ if [ $? -ne 0 ]; then
 	exit 3
 fi
 get_dates_from_header $HEADER
-msg "date CA: ${DATE_CA}" 
-msg "date Livraison: ${DATE_DELIVER}" 
+info "date CA: ${DATE_CA}" 
+info "date Livraison: ${DATE_DELIVER}" 
 #evaluate the tag, cannot be done before...
 #replace TAG with the variable content if needed, otherwise add _TAG or nothing
 #!TAG got replaced by the content of the variable whose name is in TAG
