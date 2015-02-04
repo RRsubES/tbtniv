@@ -5,7 +5,7 @@ BEGIN {
 		printf("Date CA du %s\nLivraison le %s\nClassement [%s]\n\n",
 			ENVIRON["DATE_CA"], ENVIRON["DATE_DELIVER"], ENVIRON["PRETTY_SORT"])
 	getline # to read first special line and get total nb of tbtniv
-	printf("%39s %-3s %s\n", sprintf("Tbtniv (%d distinct(s))", $1), "Nb.", "Balises")
+	printf("%39s %-3s %s\n", sprintf("Tbtniv(%d)", $1), "Nb.", "Balises")
 	pv_tbtniv = ""
 	beacons = ""
 	header = ""
@@ -24,7 +24,7 @@ function beacon_add(bcn) {
 }
 
 pv_tbtniv == $2 {
-	if (length(beacons) >= ENVIRON["PRETTY_MAXLEN"]) {
+	if (length(beacons) + length(sprintf("%6s", $1)) > ENVIRON["PRETTY_MAXLEN"]) {
 		pr(header, beacons)
 		beacons = ""; beacon_add($1)
 		header = sprintf("%39s %3s", "\"", "\"")

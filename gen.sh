@@ -48,7 +48,7 @@ TAG=
 PRETTY_EXTRAINFO=0
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
-PRETTY_MAXLEN=$((6 * 6))
+PRETTY_MAXLEN=$((16 * 6))
 while getopts ":t:l:eihs" opt; do
 	case $opt in
 		t)
