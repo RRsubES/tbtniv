@@ -2,42 +2,6 @@
 # NE PAS MODIFIER DIRECTEMENT SUR LE RESEAU, UTILISER push.sh...
 # sinon le statut exécutable saute.
 
-function info {
-	perr ">> $1"
-}
-
-function err {
-	perr "[ERR]: $1"
-}
-
-function perr {
-	echo "$1" >&2
-}
-
-function usage {
-	perr "usage: ./$(basename $0) [-es] [-l LEN] [-t TAG] < BALISEP_FILE" 
-	perr ""
-	perr "-e    : separe les lignes par une interligne vide"
-	perr "-s    : separe les blocs par une interligne vide"
-	perr "-l LEN: taille maximale de la chaine des balises )"
-	perr "        (LEN=96 par défaut)"
-	perr "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
-	perr "        peut être DATE_DELIVER ou DATE_CA ou du texte"
-	perr "        brut (sans espace)." 
-	perr ""
-	perr "e.g.: ./$(basename $0) -et ibp < BALISEP" 
-	perr "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
-	perr "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
-	perr "e.g.: ./$(basename $0) -sl 60 < BALISEP"
-	exit 1
-} 
-
-# parsing with a function call, be lazy!
-function get_dates_from_header {
-	DATE_CA=$7
-	DATE_DELIVER=${10}
-}
-
 export DATE_CA
 export DATE_DELIVER
 export PRETTY_FILE
@@ -49,22 +13,56 @@ export PRETTY_SPLIT
 TAG=
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
-PRETTY_MAXLEN=$((5 * 6))
-while getopts ":t:l:eihs" opt; do
+PRETTY_MAXLEN=5
+
+function msg {
+	echo ">> $1"
+} >&2
+
+function err {
+	msg "[ERR]: $1"
+}
+
+# parsing with a function call, be lazy!
+function get_dates_from_header {
+	DATE_CA=$7
+	DATE_DELIVER=${10}
+}
+
+function usage {
+	msg "usage: ./$(basename $0) [-es] [-n NB] [-t TAG] < BALISEP_FILE" 
+	msg ""
+	msg "-l    : separe les lignes par une interligne vide"
+	msg "-b    : separe les blocs par une interligne vide"
+	msg "-n NB : nombre max de balises affichées par ligne"
+	msg "        (NB=${PRETTY_MAXLEN} par défaut)"
+	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
+	msg "        peut être DATE_DELIVER ou DATE_CA ou du texte"
+	msg "        brut (sans espace)." 
+	msg ""
+	msg "e.g.: ./$(basename $0) -lt ibp < BALISEP" 
+	msg "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
+	msg "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
+	msg "e.g.: ./$(basename $0) -bn 4 < BALISEP"
+	exit 1
+} 
+
+while getopts ":t:n:blh" opt; do
 	case $opt in
 		t)
 			TAG=${OPTARG:-notag};;
-		e)
-			PRETTY_EMPTYLINE=1;;
 		l)
+			PRETTY_EMPTYLINE=$((!(($PRETTY_EMPTYLINE))));;
+		n)
 			PRETTY_MAXLEN=${OPTARG:-PRETTY_MAXLEN};;
-		s)
-			PRETTY_SPLIT=1;;
+		b)
+			PRETTY_SPLIT=$((!(($PRETTY_EMPTYLINE))));;
 		\:|\?|h)
 			usage;;
 	esac
 done
 shift $(($OPTIND - 1))
+PRETTY_MAXLEN=$((6 * (PRETTY_MAXLEN > 0 ? PRETTY_MAXLEN : 1) ))
 
 # checks if there is sthg redirected
 # -p /dev/stdin checks if stdin is an opened pipe
@@ -85,8 +83,8 @@ if [ $? -ne 0 ]; then
 	exit 3
 fi
 get_dates_from_header $HEADER
-info "date CA: ${DATE_CA}" 
-info "date Livraison: ${DATE_DELIVER}" 
+msg "date CA: ${DATE_CA}" 
+msg "date Livraison: ${DATE_DELIVER}" 
 #evaluate the tag, cannot be done before...
 #replace TAG with the variable content if needed, otherwise add _TAG or nothing
 #!TAG got replaced by the content of the variable whose name is in TAG
