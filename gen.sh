@@ -30,10 +30,10 @@ function get_dates_from_header {
 }
 
 function usage {
-	msg "usage: ./$(basename $0) [-es] [-n NB] [-t TAG] < BALISEP_FILE" 
+	msg "usage: ./$(basename $0) [-bl] [-n NB] [-t TAG] < BALISEP_FILE" 
 	msg ""
-	msg "-l    : separe les lignes par une interligne vide"
 	msg "-b    : separe les blocs par une interligne vide"
+	msg "-l    : separe les lignes par une interligne vide"
 	msg "-n NB : nombre max de balises affichées par ligne"
 	msg "        (NB=${PRETTY_MAXLEN} par défaut)"
 	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
