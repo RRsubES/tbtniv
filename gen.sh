@@ -88,7 +88,7 @@ msg "date Livraison: ${DATE_DELIVER}"
 #evaluate the tag, cannot be done before...
 #replace TAG with the variable content if needed, otherwise add _TAG or nothing
 #eval TAG=${TAG:+_$TAG}
-eval TAG=${TAG:+_$(echo "$TAG" | tr " " "_")}
+eval TAG=${TAG:+_${TAG// /_}}
 
 PRETTY_FILE="BALISEP_TB_${DATE_CA}${TAG}.txt"
 PRETTY_SORT="Tbtniv > Bal."
