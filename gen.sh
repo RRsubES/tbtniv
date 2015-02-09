@@ -32,17 +32,17 @@ function get_dates_from_header {
 function usage {
 	msg "usage: ./$(basename $0) [-bl] [-n NB] [-t TAG] < BALISEP_FILE" 
 	msg ""
-	msg "-b    : separe les blocs par une interligne vide"
-	msg "-l    : separe les lignes par une interligne vide"
-	msg "-n NB : nombre max de balises affichées par ligne"
-	msg "        (NB=${NR_BEACONS_MAX} par défaut)"
-	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
-	msg "        peut être DATE_DELIVER ou DATE_CA ou du texte"
-	msg "        brut (sans espace)." 
+	msg "-b     : separe les blocs par une interligne vide"
+	msg "-l     : separe les lignes par une interligne vide"
+	msg "-n NB  : nombre max de balises affichées par ligne"
+	msg "         (NB=${NR_BEACONS_MAX} par défaut)"
+	msg "-t TAG : ajout d'un tag spécifié par l'utilisateur, "
+	msg "         peut être \\\$DATE_DELIVER ou \\\$DATE_CA ou"
+	msg "         du texte brut (sans espace)." 
 	msg ""
 	msg "e.g.: ./$(basename $0) -lt ibp < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
-	msg "e.g.: ./$(basename $0) -t DATE_DELIVER < BALISEP"
+	msg "e.g.: ./$(basename $0) -t livree_\\\$DATE_DELIVER < BALISEP"
 	msg "e.g.: ./$(basename $0) -bn 4 < BALISEP"
 	exit 1
 } 
@@ -87,8 +87,7 @@ msg "date CA: ${DATE_CA}"
 msg "date Livraison: ${DATE_DELIVER}" 
 #evaluate the tag, cannot be done before...
 #replace TAG with the variable content if needed, otherwise add _TAG or nothing
-#!TAG got replaced by the content of the variable whose name is in TAG
-TAG=${TAG:+_${!TAG:-$TAG}}
+eval TAG=${TAG:+_$TAG}
 
 PRETTY_FILE="BALISEP_TB_${DATE_CA}${TAG}.txt"
 PRETTY_SORT="Tbtniv > Bal."
