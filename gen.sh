@@ -13,7 +13,7 @@ export PRETTY_SPLIT
 TAG=
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
-PRETTY_MAXLEN=5
+NR_BEACONS_MAX=5
 
 function msg {
 	echo ">> $1"
@@ -35,7 +35,7 @@ function usage {
 	msg "-b    : separe les blocs par une interligne vide"
 	msg "-l    : separe les lignes par une interligne vide"
 	msg "-n NB : nombre max de balises affichées par ligne"
-	msg "        (NB=${PRETTY_MAXLEN} par défaut)"
+	msg "        (NB=${NR_BEACONS_MAX} par défaut)"
 	msg "-t TAG: ajout d'un tag spécifié par l'utilisateur, "
 	msg "        peut être DATE_DELIVER ou DATE_CA ou du texte"
 	msg "        brut (sans espace)." 
@@ -54,7 +54,7 @@ while getopts ":t:n:blh" opt; do
 		l)
 			PRETTY_EMPTYLINE=$((!(($PRETTY_EMPTYLINE))));;
 		n)
-			PRETTY_MAXLEN=${OPTARG:-PRETTY_MAXLEN};;
+			NR_BEACONS_MAX=${OPTARG:-NR_BEACONS_MAX};;
 		b)
 			PRETTY_SPLIT=$((!(($PRETTY_EMPTYLINE))));;
 		\:|\?|h)
@@ -62,7 +62,7 @@ while getopts ":t:n:blh" opt; do
 	esac
 done
 shift $(($OPTIND - 1))
-PRETTY_MAXLEN=$((6 * (PRETTY_MAXLEN > 0 ? PRETTY_MAXLEN : 1) ))
+PRETTY_MAXLEN=$((6 * (NR_BEACONS_MAX > 0 ? NR_BEACONS_MAX : 1) ))
 
 # checks if there is sthg redirected
 # -p /dev/stdin checks if stdin is an opened pipe
