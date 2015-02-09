@@ -1,5 +1,5 @@
 # input: 3 4G 115 SR... or 314G *** PX...
-# output: BEACON LVLS_SEPARATED_BY_HYPHEN NUMBER_OF_LVLS
+# output: BEACON TBTNIV TBTNIV_LEN(nb of lvls in the tbtniv)
 function lvl(l) # returns the number of levels in the template
 {
 	# length is odd; 3, 7, 11, ... should return 1, 2, 3

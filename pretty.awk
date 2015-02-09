@@ -1,4 +1,4 @@
-# input: (sorted) BEACON NB_LAYERS TBTNIV NB_OF_BEACONS_USING_THIS_TBTNIV
+# input: (sorted) BEACON TBTNIV_LEN TBTNIV TBTNIV_OCC(occurences)
 # output:
 BEGIN {
 	getline # to read first special line and get total nb of tbtniv
