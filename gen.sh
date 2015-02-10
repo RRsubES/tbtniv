@@ -12,7 +12,7 @@ export PRETTY_NR_TBTNIV
 TAG=
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
-NR_BEACONS_MAX=5
+BEACONS_PER_LINE=5
 
 function msg {
 	echo ">> $1"
@@ -35,7 +35,7 @@ function usage {
 	msg "-b     : separe les blocs par une interligne vide"
 	msg "-l     : separe les lignes par une interligne vide"
 	msg "-n NB  : nombre max de balises affichées par ligne"
-	msg "         (NB=${NR_BEACONS_MAX} par défaut)"
+	msg "         (NB=${BEACONS_PER_LINE} par défaut)"
 	msg "-t TAG : ajout d'un tag spécifié par l'utilisateur, "
 	msg "         (TAG=vide par défaut), peut-être aussi bien" 
 	msg "         des variables extraites du fichier en entrée"
@@ -66,7 +66,7 @@ while getopts ":t:n:blh" opt; do
 		l)
 			PRETTY_EMPTYLINE=$((!(($PRETTY_EMPTYLINE))));;
 		n)
-			NR_BEACONS_MAX=${OPTARG:-NR_BEACONS_MAX};;
+			BEACONS_PER_LINE=${OPTARG:-BEACONS_PER_LINE};;
 		b)
 			PRETTY_SPLIT=$((!(($PRETTY_EMPTYLINE))));;
 		\:|\?|h)
@@ -74,7 +74,7 @@ while getopts ":t:n:blh" opt; do
 	esac
 done
 shift $(($OPTIND - 1))
-PRETTY_MAXLEN=$((6 * (NR_BEACONS_MAX > 0 ? NR_BEACONS_MAX : 1) ))
+PRETTY_MAXLEN=$((6 * (BEACONS_PER_LINE > 0 ? BEACONS_PER_LINE : 1) ))
 
 # checks if there is sthg redirected
 # -p /dev/stdin checks if stdin is an opened pipe
@@ -94,19 +94,21 @@ if [ $? -ne 0 ]; then
 	err "$(echo ${HEADER_TEMPLATE:1:${#HEADER_TEMPLATE}-2} | sed 's/\\//g')"
 	exit 3
 fi
-get_dates_from_header $HEADER
-msg "date CA: ${DATE_CA}" 
-msg "date Livraison: ${DATE_DELIVER}" 
-# creating the base temporary file for all next process
+
+#creating the base temporary file for all next process
 sed 's/\r//g' |
  # [A-Z0-9*]\{1,2\} because some sectors have a single letter name
  grep '^3[ 12][A-Z0-9]\{2,5\} \+\(\(\*\*\*\|[0-9]\{3\}\) \(\*\*\|[A-Z0-9]\{1,2\}\) \+\)\{1,3\}$' |
  awk -f extract.awk |
  awk -f process.awk > "$TMP"
 
-PRETTY_NR_TBTNIV=$(tail -n +2 < $TMP | cut -d' ' -f 3 | sort | uniq -c | wc -l)
-msg "Décompte tbtniv : ${PRETTY_NR_TBTNIV}" 
-
+get_dates_from_header $HEADER
+msg "date CA: ${DATE_CA}" 
+msg "date Livraison: ${DATE_DELIVER}" 
+#
+PRETTY_NR_TBTNIV=$(cut -d' ' -f 3 < "$TMP" | sort | uniq -c | wc -l)
+NR_BEACONS=$(wc -l < "$TMP")
+msg "Statistiques: ${PRETTY_NR_TBTNIV} tbtniv(s), ${NR_BEACONS} balise(s)"
 #evaluate the tag, cannot be done before...
 #replace TAG with the variable content if needed, otherwise add _TAG or nothing
 #replace spaces with underscores
