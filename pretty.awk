@@ -31,7 +31,7 @@ pv_tbtniv == $2 {
 
 {
 	pr(header, beacons)
-	if (NR > 2 && ENVIRON["PRETTY_SPLIT"] == "1" && ENVIRON["PRETTY_EMPTYLINE"] =="0")
+	if (NR > 1 && ENVIRON["PRETTY_SPLIT"] == "1" && ENVIRON["PRETTY_EMPTYLINE"] =="0")
 		printf("\n")
 
 	pv_tbtniv = $2
