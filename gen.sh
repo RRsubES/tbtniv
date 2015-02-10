@@ -32,6 +32,7 @@ function get_dates_from_header {
 function usage {
 	msg "usage: ./$(basename $0) [-bl] [-n NB] [-t TAG] < BALISEP_FILE" 
 	msg ""
+	msg "Paramètres:"
 	msg "-b     : separe les blocs par une interligne vide"
 	msg "-l     : separe les lignes par une interligne vide"
 	msg "-n NB  : nombre max de balises affichées par ligne"
@@ -41,9 +42,13 @@ function usage {
 	msg "         ou du texte brut (espaces remplacés par _)." 
 	msg ""
 	msg "e.g.: ./$(basename $0) -lt ibp < BALISEP" 
-	msg "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
+	msg "(ou)  ./$(basename $0) -l -t ibp < BALISEP" 
+	msg ""
 	msg "e.g.: ./$(basename $0) -t livree_le_\\\${DATE_DELIVER} < BALISEP"
-	msg "e.g.: ./$(basename $0) -bn 4 < BALISEP"
+	msg "(ou)  ./$(basename $0) -t \"livree le \\\${DATE_DELIVER}\" < BALISEP"
+	msg ""
+	msg "e.g.: ./$(basename $0) -lbn 4 -t ibp < BALISEP"
+	msg "(ou)  ./$(basename $0) -l -b -n 4 -t ibp < BALISEP"
 	exit 1
 } 
 
@@ -87,6 +92,7 @@ msg "date CA: ${DATE_CA}"
 msg "date Livraison: ${DATE_DELIVER}" 
 #evaluate the tag, cannot be done before...
 #replace TAG with the variable content if needed, otherwise add _TAG or nothing
+#replace spaces with underscores
 #eval TAG=${TAG:+_$TAG}
 eval TAG=${TAG:+_${TAG// /_}}
 
