@@ -37,8 +37,16 @@ function usage {
 	msg "-n NB  : nombre max de balises affichées par ligne"
 	msg "         (NB=${NR_BEACONS_MAX} par défaut)"
 	msg "-t TAG : ajout d'un tag spécifié par l'utilisateur, "
-	msg "         peut être \\\${DATE_DELIVER} ou \\\${DATE_CA}"
-	msg "         ou du texte brut (espaces remplacés par _)." 
+	msg "         (TAG=vide par défaut), peut-être aussi bien" 
+	msg "         des variables extraites du fichier en entrée"
+	msg "         que du texte brut (les espaces seront remplacés" 
+	msg "         par _)." 
+	msg "         les variables extraites sont :" 
+	msg "         - DATE_DELIVER" 
+	msg "         - DATE_CA" 
+	msg "         - PRETTY_NR_TBTNIV ..." 
+	msg "         Pour ce faire, les écrire dans le tag sous la forme" 
+	msg "         \\\${DATE_DELIVER} ou \\\${DATE_CA}" 
 	msg ""
 	msg "e.g.: ./$(basename $0) -lt ibp < BALISEP" 
 	msg "(ou)  ./$(basename $0) -l -t ibp < BALISEP" 
@@ -46,8 +54,8 @@ function usage {
 	msg "e.g.: ./$(basename $0) -t livree_le_\\\${DATE_DELIVER} < BALISEP"
 	msg "(ou)  ./$(basename $0) -t \"livree le \\\${DATE_DELIVER}\" < BALISEP"
 	msg ""
-	msg "e.g.: ./$(basename $0) -lbn 4 -t ibp < BALISEP"
-	msg "(ou)  ./$(basename $0) -l -b -n 4 -t ibp < BALISEP"
+	msg "e.g.: ./$(basename $0) -lbn 4 -t \\\${PRETTY_NR_TBTNIV} < BALISEP"
+	msg "(ou)  ./$(basename $0) -l -b -n 4 -t \\\${PRETTY_NR_TBTNIV} < BALISEP"
 	exit 1
 } 
 
@@ -89,12 +97,6 @@ fi
 get_dates_from_header $HEADER
 msg "date CA: ${DATE_CA}" 
 msg "date Livraison: ${DATE_DELIVER}" 
-#evaluate the tag, cannot be done before...
-#replace TAG with the variable content if needed, otherwise add _TAG or nothing
-#replace spaces with underscores
-#eval TAG=${TAG:+_$TAG}
-eval TAG=${TAG:+_${TAG// /_}}
-
 # creating the base temporary file for all next process
 sed 's/\r//g' |
  # [A-Z0-9*]\{1,2\} because some sectors have a single letter name
@@ -104,6 +106,12 @@ sed 's/\r//g' |
 
 PRETTY_NR_TBTNIV=$(tail -n +2 < $TMP | cut -d' ' -f 3 | sort | uniq -c | wc -l)
 msg "Décompte tbtniv : ${PRETTY_NR_TBTNIV}" 
+
+#evaluate the tag, cannot be done before...
+#replace TAG with the variable content if needed, otherwise add _TAG or nothing
+#replace spaces with underscores
+#eval TAG=${TAG:+_$TAG}
+eval TAG=${TAG:+_${TAG// /_}}
 
 declare -A ary
 ary[1,"PRETTY_FILE"]="BALISEP_TB_${DATE_CA}${TAG}.txt"
