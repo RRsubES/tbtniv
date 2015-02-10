@@ -96,7 +96,7 @@ eval TAG=${TAG:+_${TAG// /_}}
 
 # creating the base temporary file for all next process
 sed 's/\r//g' |
-# [A-Z0-9*]\{1,2\} because some sectors have a single letter name
+ # [A-Z0-9*]\{1,2\} because some sectors have a single letter name
  grep '^3[ 12][A-Z0-9]\{2,5\} \+\(\(\*\*\*\|[0-9]\{3\}\) \(\*\*\|[A-Z0-9]\{1,2\}\) \+\)\{1,3\}$' |
  awk -f extract.awk |
  awk -f process.awk > "$TMP"
@@ -110,7 +110,7 @@ ary[2,"PRETTY_FILE"]="BALISEP_NTB_${DATE_CA}${TAG}.txt"
 ary[2,"PRETTY_SORT"]="Nb. > Tbtniv > Bal."
 ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
 
-for i in $(seq 1 2); do
+for i in {1..2}; do
 	PRETTY_FILE=${ary[$i,"PRETTY_FILE"]}
 	PRETTY_SORT=${ary[$i,"PRETTY_SORT"]}
 	sort ${ary[$i,"SORT"]} < "$TMP" |
