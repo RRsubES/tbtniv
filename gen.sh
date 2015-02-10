@@ -96,22 +96,27 @@ msg "date Livraison: ${DATE_DELIVER}"
 #eval TAG=${TAG:+_$TAG}
 eval TAG=${TAG:+_${TAG// /_}}
 
-PRETTY_FILE="BALISEP_TB_${DATE_CA}${TAG}.txt"
-PRETTY_SORT="Tbtniv > Bal."
+# creating the base temporary file for all next process
 sed 's/\r//g' |
 # [A-Z0-9*]\{1,2\} because some sectors have a single letter name
  grep '^3[ 12][A-Z0-9]\{2,5\} \+\(\(\*\*\*\|[0-9]\{3\}\) \(\*\*\|[A-Z0-9]\{1,2\}\) \+\)\{1,3\}$' |
  awk -f extract.awk |
- awk -f process.awk |
- tee "$TMP" |
- sort -k2,2n -k3,3 -k1,1 |
- cut -d' ' -f 1,3-5 |
- awk -f pretty.awk > "$PRETTY_FILE"
+ awk -f process.awk > "$TMP"
+ 
+declare -A ary
+ary[1,"PRETTY_FILE"]="BALISEP_TB_${DATE_CA}${TAG}.txt"
+ary[1,"PRETTY_SORT"]="Tbtniv > Bal."
+ary[1,"SORT"]="-k2,2n -k3,3 -k1,1"
 
-PRETTY_FILE="BALISEP_NTB_${DATE_CA}${TAG}.txt"
-PRETTY_SORT="Nb. > Tbtniv > Bal."
-cat "$TMP" |
- sort -k4,4n -k2,2n -k3,3 -k1,1 |
- cut -d' ' -f 1,3-5 |
- awk -f pretty.awk > "$PRETTY_FILE"
+ary[2,"PRETTY_FILE"]="BALISEP_NTB_${DATE_CA}${TAG}.txt"
+ary[2,"PRETTY_SORT"]="Nb. > Tbtniv > Bal."
+ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
+
+for i in $(seq 1 2); do
+	PRETTY_FILE=${ary[$i,"PRETTY_FILE"]}
+	PRETTY_SORT=${ary[$i,"PRETTY_SORT"]}
+	sort ${ary[$i,"SORT"]} < "$TMP" |
+	 cut -d' ' -f 1,3-5 |
+	 awk -f pretty.awk > "$PRETTY_FILE"
+done
 
