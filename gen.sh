@@ -37,12 +37,12 @@ function usage {
 	msg "-n NB  : nombre max de balises affichées par ligne"
 	msg "         (NB=${NR_BEACONS_MAX} par défaut)"
 	msg "-t TAG : ajout d'un tag spécifié par l'utilisateur, "
-	msg "         peut être \\\$DATE_DELIVER ou \\\$DATE_CA ou"
-	msg "         du texte brut (sans espace)." 
+	msg "         peut être \\\${DATE_DELIVER} ou \\\${DATE_CA}"
+	msg "         ou du texte brut (espaces remplacés par _)." 
 	msg ""
 	msg "e.g.: ./$(basename $0) -lt ibp < BALISEP" 
 	msg "e.g.: ./$(basename $0) -t ibp2015 < BALISEP" 
-	msg "e.g.: ./$(basename $0) -t livree_le_\\\$DATE_DELIVER < BALISEP"
+	msg "e.g.: ./$(basename $0) -t livree_le_\\\${DATE_DELIVER} < BALISEP"
 	msg "e.g.: ./$(basename $0) -bn 4 < BALISEP"
 	exit 1
 } 
