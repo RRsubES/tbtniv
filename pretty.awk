@@ -1,8 +1,7 @@
 # input: (sorted) BEACON TBTNIV_LEN TBTNIV TBTNIV_OCC(occurences)
 # output:
 BEGIN {
-	getline # to read first special line and get total nb of tbtniv
-	printf("%39s %-3s %s\n", sprintf("Tbtniv(%d)", $1), "Nb.", "Balises")
+	printf("%39s %-3s %s\n", sprintf("Tbtniv(%d)", ENVIRON["PRETTY_NR_TBTNIV"]), "Nb.", "Balises")
 	pv_tbtniv = ""
 	beacons = ""
 	header = ""

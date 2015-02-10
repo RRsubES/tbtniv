@@ -11,9 +11,6 @@ BEGIN {
 }
 
 END {
-	for (l in nb)
-		total++
-	printf("%d\n", total)
 	for (l in nb) {
 		for (n in nb[l])
 			printf("%s %d %s %d\n", n, nb[l][n], l, count[l])

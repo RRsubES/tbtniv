@@ -7,6 +7,7 @@ export PRETTY_SORT
 export PRETTY_MAXLEN
 export PRETTY_EMPTYLINE
 export PRETTY_SPLIT
+export PRETTY_NR_TBTNIV
 
 TAG=
 PRETTY_EMPTYLINE=0
@@ -100,7 +101,10 @@ sed 's/\r//g' |
  grep '^3[ 12][A-Z0-9]\{2,5\} \+\(\(\*\*\*\|[0-9]\{3\}\) \(\*\*\|[A-Z0-9]\{1,2\}\) \+\)\{1,3\}$' |
  awk -f extract.awk |
  awk -f process.awk > "$TMP"
- 
+
+PRETTY_NR_TBTNIV=$(tail -n +2 < $TMP | cut -d' ' -f 3 | sort | uniq -c | wc -l)
+msg "Décompte tbtniv : ${PRETTY_NR_TBTNIV}" 
+
 declare -A ary
 ary[1,"PRETTY_FILE"]="BALISEP_TB_${DATE_CA}${TAG}.txt"
 ary[1,"PRETTY_SORT"]="Tbtniv > Bal."
