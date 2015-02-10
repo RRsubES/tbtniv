@@ -2,8 +2,6 @@
 # NE PAS MODIFIER DIRECTEMENT SUR LE RESEAU, UTILISER push.sh...
 # sinon le statut exécutable saute.
 
-export DATE_CA
-export DATE_DELIVER
 export PRETTY_FILE
 export PRETTY_SORT
 export PRETTY_MAXLEN
