@@ -7,12 +7,21 @@ BEGIN {
 	header = ""
 }
 
-function pr(hdr, bcns) {
-	if (hdr == "" && bcns == "")
+function pr() {
+	if (header == "" || beacons == "")
 		return
-	printf("%43s %s\n", hdr, substr(bcns, 0, length(bcns) - 1))
-	if (ENVIRON["PRETTY_EMPTYLINE"])
+	while(length(beacons) > ENVIRON["PRETTY_MAXLEN"]) {
+		printf("%43s %s\n", header, substr(beacons, 0, ENVIRON["PRETTY_MAXLEN"] - 1))
+		beacons = substr(beacons, ENVIRON["PRETTY_MAXLEN"] + 1)
+		header = sprintf("%39s %3s", "", "")
+		if (ENVIRON["PRETTY_EMPTYLINE"] == "1")
+			printf("\n")
+	}
+	printf("%43s %s\n", header, substr(beacons, 0, length(beacons) - 1))
+	if (ENVIRON["PRETTY_SPLIT"] == "1" || ENVIRON["PRETTY_EMPTYLINE"] =="1")
 		printf("\n")
+	beacons = ""
+	header = ""
 }
 
 function beacon_add(bcn) {
@@ -20,26 +29,19 @@ function beacon_add(bcn) {
 }
 
 pv_tbtniv == $2 {
-	if (length(beacons) + length(sprintf("%6s", $1)) > ENVIRON["PRETTY_MAXLEN"]) {
-		pr(header, beacons)
-		beacons = ""; beacon_add($1)
-		header = sprintf("%39s %3s", "", "")
-	} else
-		beacon_add($1)
+	beacon_add($1)
 	next
 }
 
 {
-	pr(header, beacons)
-	if (NR > 1 && ENVIRON["PRETTY_SPLIT"] == "1" && ENVIRON["PRETTY_EMPTYLINE"] =="0")
-		printf("\n")
+	pr()
 
 	pv_tbtniv = $2
-	beacons = ""; beacon_add($1)
+	beacon_add($1)
 	header = sprintf("%39s %3d", $2, $3)
 }
 
 END {
-	pr(header, beacons)
+	pr()
 	printf(">> tri \"%s\" dans [%s]\n", ENVIRON["PRETTY_SORT"], ENVIRON["PRETTY_FILE"]) > "/dev/stderr"
 }
