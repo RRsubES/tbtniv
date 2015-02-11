@@ -12,7 +12,7 @@ export PRETTY_NR_TBTNIV
 TAG=
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
-BEACONS_PER_LINE=5
+MAX_BEACONS_PER_LINE=5
 
 function msg {
 	echo ">> $1"
@@ -35,7 +35,7 @@ function usage {
 	msg "-b     : separe les blocs par une interligne vide"
 	msg "-l     : separe les lignes par une interligne vide"
 	msg "-n NB  : nombre max de balises affichées par ligne"
-	msg "         (NB=${BEACONS_PER_LINE} par défaut)"
+	msg "         (NB=${MAX_BEACONS_PER_LINE} par défaut)"
 	msg "-t TAG : ajout d'un tag spécifié par l'utilisateur, "
 	msg "         (TAG=vide par défaut), peut-être aussi bien" 
 	msg "         des variables extraites du fichier en entrée"
@@ -66,7 +66,7 @@ while getopts ":t:n:blh" opt; do
 		l)
 			PRETTY_EMPTYLINE=$((!(($PRETTY_EMPTYLINE))));;
 		n)
-			BEACONS_PER_LINE=${OPTARG:-BEACONS_PER_LINE};;
+			MAX_BEACONS_PER_LINE=${OPTARG:-MAX_BEACONS_PER_LINE};;
 		b)
 			PRETTY_SPLIT=$((!(($PRETTY_EMPTYLINE))));;
 		\:|\?|h)
@@ -74,7 +74,7 @@ while getopts ":t:n:blh" opt; do
 	esac
 done
 shift $(($OPTIND - 1))
-PRETTY_MAXLEN=$((6 * (BEACONS_PER_LINE > 0 ? BEACONS_PER_LINE : 1) ))
+PRETTY_MAXLEN=$((6 * (MAX_BEACONS_PER_LINE > 0 ? MAX_BEACONS_PER_LINE : 1) ))
 
 # checks if there is sthg redirected
 # -p /dev/stdin checks if stdin is an opened pipe
