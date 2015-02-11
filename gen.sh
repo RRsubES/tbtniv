@@ -103,8 +103,7 @@ sed 's/\r//g' |
  awk -f process.awk > "$TMP"
 
 get_dates_from_header $HEADER
-msg "date CA: ${DATE_CA}" 
-msg "date Livraison: ${DATE_DELIVER}" 
+msg "Date CA: ${DATE_CA}, livraison: ${DATE_DELIVER}" 
 #
 PRETTY_NR_TBTNIV=$(cut -d' ' -f 3 < "$TMP" | sort | uniq -c | wc -l)
 NR_BEACONS=$(wc -l < "$TMP")
