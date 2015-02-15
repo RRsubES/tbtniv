@@ -13,6 +13,8 @@ TAG=
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
 MAX_BEACONS_PER_LINE=5
+LOG_FILENAME=
+LOG_FILES="0"
 
 function msg {
 	echo ">> $1"
@@ -36,6 +38,8 @@ function usage {
 	msg "-l     : separe les lignes par une interligne vide"
 	msg "-n NB  : nombre max de balises affichées par ligne"
 	msg "         (NB=${MAX_BEACONS_PER_LINE} par défaut)"
+	msg "-o FILE: stocke les noms de fichiers créés dans FILE"
+	msg "         attention le contenu du fichier est effacé"
 	msg "-t TAG : ajout d'un tag spécifié par l'utilisateur, "
 	msg "         (TAG=vide par défaut), peut-être aussi bien" 
 	msg "         des variables extraites du fichier en entrée"
@@ -59,7 +63,7 @@ function usage {
 	exit 1
 } 
 
-while getopts ":t:n:blh" opt; do
+while getopts ":t:n:o:blh" opt; do
 	case $opt in
 		t)
 			TAG=${OPTARG:-notag};;
@@ -67,6 +71,10 @@ while getopts ":t:n:blh" opt; do
 			PRETTY_EMPTYLINE=$((!(($PRETTY_EMPTYLINE))));;
 		n)
 			MAX_BEACONS_PER_LINE=${OPTARG:-MAX_BEACONS_PER_LINE};;
+		o)	
+			LOG_FILENAME=${OPTARG:-${LOG_FILENAME}}
+			LOG_FILES="1"
+			touch "${LOG_FILENAME}";;
 		b)
 			PRETTY_SPLIT=$((!(($PRETTY_EMPTYLINE))));;
 		\:|\?|h)
@@ -129,5 +137,8 @@ for i in {1..2}; do
 	sort ${ary[$i,"SORT"]} < "$TMP" |
 	 cut -d' ' -f 1,3-5 |
 	 awk -f pretty.awk > "$PRETTY_FILE"
+	if [ ! -z ${LOG_FILES} ]; then
+		echo "$PRETTY_FILE" >> "${LOG_FILENAME}"
+	fi
 done
 
