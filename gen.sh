@@ -91,7 +91,7 @@ if [ -t 0 ]; then
 	usage
 fi
 
-TMP="/tmp/tbtniv.$(date '+%0d%0b%Y-%0kh%0M').tmp"
+TMP="/tmp/tbtniv.$$.$(date '+%0d%0b%Y-%0kh%0M').tmp"
 
 # normal process:
 HEADER_TEMPLATE='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
