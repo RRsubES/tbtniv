@@ -13,7 +13,7 @@ TAG=
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
 MAX_BEACONS_PER_LINE=5
-DIRECTORY=./
+WD=
 
 function msg {
 	echo ">> $1"
@@ -37,10 +37,11 @@ function usage {
 	msg "-l     : separe les lignes par une interligne vide"
 	msg "-n NB  : nombre max de balises affichées par ligne"
 	msg "         (NB=${MAX_BEACONS_PER_LINE} par défaut)"
-	msg "-f     : affiche les noms de fichiers créés sur"
+	msg "-f     : affiche le nom des fichiers créés sur"
 	msg "         la sortie standard"
-	msg "-d     : créé un repertoire destination où sont stockés"
-	msg "         les fichiers générés; peut s'utiliser avec -f."
+	msg "-d DIR : spécifie le répertoire destination où seront"
+	msg "         stockés les fichiers générés; souvent avec -f."
+	msg "-D     : comme -d sauf que DIR=./PID.DATE"
 	msg "-t TAG : ajout d'un tag spécifié par l'utilisateur, "
 	msg "         (TAG=vide par défaut), peut-être aussi bien" 
 	msg "         des variables extraites du fichier en entrée"
@@ -64,16 +65,32 @@ function usage {
 	exit 1
 } 
 
-while getopts ":t:n:bdflh" opt; do
+while getopts ":t:n:d:bDflh" opt; do
 	case $opt in
+		D)
+			WD="./$$.$(date '+%0d%0b%Y-%0kh%0M')"
+			mkdir -p "${WD}" 
+			if [ $? -ne 0 ]; then
+				err "problème à la création de ${WD}"
+				exit 3
+			fi
+			;;
 		d)
-			DIRECTORY="./$$.$(date '+%0d%0b%Y-%0kh%0M')/"
-			if [ -d "${DIRECTORY}" ]; then
-				err "${DIRECTORY} existe déjà, abandon"
-				exit 2
-			else
-				mkdir "${DIRECTORY}"
-			fi;;
+			eval WD="${OPTARG%/}"
+			if [ "${WD}" == "." ]; then
+				WD=
+				break
+			fi
+			if [ -e "${WD}" -a ! -d "${WD}" ]; then
+				err "${WD} doit être un répertoire et ne pas exister"
+				exit 3
+			fi
+			mkdir -p "${WD}" 
+			if [ $? -ne 0 ]; then
+				err "problème à la création de ${WD}"
+				exit 3
+			fi
+			;;
 		t)
 			TAG=${OPTARG:-notag};;
 		l)
@@ -91,6 +108,7 @@ while getopts ":t:n:bdflh" opt; do
 done
 shift $(($OPTIND - 1))
 PRETTY_MAXLEN=$((6 * (MAX_BEACONS_PER_LINE > 0 ? MAX_BEACONS_PER_LINE : 1) ))
+WD=${WD:+${WD}/}
 
 # checks if there is sthg redirected
 # -p /dev/stdin checks if stdin is an opened pipe
@@ -140,15 +158,15 @@ ary[2,"PRETTY_SORT"]="Nb. > Tbtniv > Bal."
 ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
 
 for i in {1..2}; do
-	PRETTY_FILE=${ary[$i,"PRETTY_FILE"]}
+	PRETTY_FILE=${WD}${ary[$i,"PRETTY_FILE"]}
 	PRETTY_SORT=${ary[$i,"PRETTY_SORT"]}
 	sort ${ary[$i,"SORT"]} < "$TMP" |
 	 cut -d' ' -f 1,3-5 |
-	 awk -f pretty.awk > "${DIRECTORY}${PRETTY_FILE}"
+	 awk -f pretty.awk > "${PRETTY_FILE}"
 #if [ -n ${RETURN_FILES} ]; then
 	# passes the test if the variable is defined
 	if [ -v RETURN_FILES ]; then
-		echo "${DIRECTORY}${PRETTY_FILE}" 
+		echo "${PRETTY_FILE}" 
 	fi
 done
 
