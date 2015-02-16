@@ -13,6 +13,7 @@ TAG=
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
 MAX_BEACONS_PER_LINE=5
+DIRECTORY=./
 
 function msg {
 	echo ">> $1"
@@ -38,6 +39,8 @@ function usage {
 	msg "         (NB=${MAX_BEACONS_PER_LINE} par défaut)"
 	msg "-f     : affiche les noms de fichiers créés sur"
 	msg "         la sortie standard"
+	msg "-d     : créé un repertoire destination où sont stockés"
+	msg "         les fichiers générés; peut s'utiliser avec -f."
 	msg "-t TAG : ajout d'un tag spécifié par l'utilisateur, "
 	msg "         (TAG=vide par défaut), peut-être aussi bien" 
 	msg "         des variables extraites du fichier en entrée"
@@ -61,8 +64,16 @@ function usage {
 	exit 1
 } 
 
-while getopts ":t:n:bflh" opt; do
+while getopts ":t:n:bdflh" opt; do
 	case $opt in
+		d)
+			DIRECTORY="./$$.$(date '+%0d%0b%Y-%0kh%0M')/"
+			if [ -d "${DIRECTORY}" ]; then
+				err "${DIRECTORY} existe déjà, abandon"
+				exit 2
+			else
+				mkdir "${DIRECTORY}"
+			fi;;
 		t)
 			TAG=${OPTARG:-notag};;
 		l)
@@ -70,8 +81,8 @@ while getopts ":t:n:bflh" opt; do
 		n)
 			MAX_BEACONS_PER_LINE=${OPTARG:-MAX_BEACONS_PER_LINE};;
 		f)	
-			LOG_FILES=;;
-#LOG_FILES=1;;
+			RETURN_FILES=;;
+#RETURN_FILES=1;;
 		b)
 			PRETTY_SPLIT=$((!(($PRETTY_EMPTYLINE))));;
 		\:|\?|h)
@@ -133,11 +144,11 @@ for i in {1..2}; do
 	PRETTY_SORT=${ary[$i,"PRETTY_SORT"]}
 	sort ${ary[$i,"SORT"]} < "$TMP" |
 	 cut -d' ' -f 1,3-5 |
-	 awk -f pretty.awk > "$PRETTY_FILE"
-#if [ -n ${LOG_FILES} ]; then
+	 awk -f pretty.awk > "${DIRECTORY}${PRETTY_FILE}"
+#if [ -n ${RETURN_FILES} ]; then
 	# passes the test if the variable is defined
-	if [ -v LOG_FILES ]; then
-		echo "[FILE] $PRETTY_FILE" 
+	if [ -v RETURN_FILES ]; then
+		echo "${DIRECTORY}${PRETTY_FILE}" 
 	fi
 done
 
