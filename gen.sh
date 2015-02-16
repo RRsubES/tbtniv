@@ -13,7 +13,7 @@ TAG=
 PRETTY_EMPTYLINE=0
 PRETTY_SPLIT=0
 MAX_BEACONS_PER_LINE=5
-WD=
+WD=./
 
 function msg {
 	echo ">> $1"
@@ -76,30 +76,27 @@ while getopts ":t:n:d:bDflh" opt; do
 			fi
 			;;
 		d)
-			eval WD="${OPTARG%/}"
-			if [ "${WD}" == "." ]; then
-				WD=
-				break
+			eval WD="${OPTARG}"
+			if [ ! -e "${WD}" ]; then
+				mkdir -p "${WD}" 
+				if [ $? -ne 0 ]; then
+					err "création impossible de ${WD}"
+					exit 3
+				fi
 			fi
-			if [ -e "${WD}" -a ! -d "${WD}" ]; then
-				err "${WD} doit être un répertoire et ne pas exister"
-				exit 3
-			fi
-			mkdir -p "${WD}" 
-			if [ $? -ne 0 ]; then
-				err "problème à la création de ${WD}"
+			if [ ! -d "${WD}" ]; then
+				err "${WD} doit être un répertoire"
 				exit 3
 			fi
 			;;
 		t)
-			TAG=${OPTARG:-notag};;
+			TAG=${OPTARG};;
 		l)
 			PRETTY_EMPTYLINE=$((!(($PRETTY_EMPTYLINE))));;
 		n)
 			MAX_BEACONS_PER_LINE=${OPTARG:-MAX_BEACONS_PER_LINE};;
 		f)	
 			RETURN_FILES=;;
-#RETURN_FILES=1;;
 		b)
 			PRETTY_SPLIT=$((!(($PRETTY_EMPTYLINE))));;
 		\:|\?|h)
@@ -108,7 +105,8 @@ while getopts ":t:n:d:bDflh" opt; do
 done
 shift $(($OPTIND - 1))
 PRETTY_MAXLEN=$((6 * (MAX_BEACONS_PER_LINE > 0 ? MAX_BEACONS_PER_LINE : 1) ))
-WD=${WD:+${WD}/}
+WD="${WD#./}"
+WD=${WD:+${WD%/}/}
 
 # checks if there is sthg redirected
 # -p /dev/stdin checks if stdin is an opened pipe
@@ -117,7 +115,7 @@ if [ -t 0 ]; then
 	usage
 fi
 
-TMP="/tmp/tbtniv.$$.$(date '+%0d%0b%Y-%0kh%0M').tmp"
+TMP="${WD}tbtniv.$$.$(date '+%0d%0b%Y-%0kh%0M').tmp"
 
 # normal process:
 HEADER_TEMPLATE='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
@@ -149,16 +147,16 @@ msg "Statistiques: ${PRETTY_NR_TBTNIV} tbtniv(s), ${NR_BEACONS} balise(s)"
 eval TAG=${TAG:+_${TAG// /_}}
 
 declare -A ary
-ary[1,"PRETTY_FILE"]="BALISEP_TB_${DATE_CA}${TAG}.txt"
+ary[1,"PRETTY_FILE"]="${WD}BALISEP_TB_${DATE_CA}${TAG}.txt"
 ary[1,"PRETTY_SORT"]="Tbtniv > Bal."
 ary[1,"SORT"]="-k2,2n -k3,3 -k1,1"
 
-ary[2,"PRETTY_FILE"]="BALISEP_NTB_${DATE_CA}${TAG}.txt"
+ary[2,"PRETTY_FILE"]="${WD}BALISEP_NTB_${DATE_CA}${TAG}.txt"
 ary[2,"PRETTY_SORT"]="Nb. > Tbtniv > Bal."
 ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
 
 for i in {1..2}; do
-	PRETTY_FILE=${WD}${ary[$i,"PRETTY_FILE"]}
+	PRETTY_FILE=${ary[$i,"PRETTY_FILE"]}
 	PRETTY_SORT=${ary[$i,"PRETTY_SORT"]}
 	sort ${ary[$i,"SORT"]} < "$TMP" |
 	 cut -d' ' -f 1,3-5 |
@@ -170,3 +168,4 @@ for i in {1..2}; do
 	fi
 done
 
+rm -f "$TMP"
