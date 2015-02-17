@@ -16,12 +16,12 @@ MAX_BEACONS_PER_LINE=5
 WD=./
 
 function msg {
-	echo ">> $1"
+	echo "$1"
 } >&2
 
 function err {
-	msg "[ERR]: $1"
-}
+	echo "[E] $1"
+} >&2
 
 # parsing with a function call, be lazy!
 function get_dates_from_header {
@@ -30,7 +30,7 @@ function get_dates_from_header {
 }
 
 function usage {
-	msg "usage: ./$(basename $0) [-bl] [-n NB] [-t TAG] < BALISEP_FILE" 
+	msg "usage: ./$(basename $0) [-bDfl] [-d DIR] [-n NB] [-t TAG] < BALISEP" 
 	msg ""
 	msg "Paramètres:"
 	msg "-b     : separe les blocs par une interligne vide"
