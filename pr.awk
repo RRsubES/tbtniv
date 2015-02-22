@@ -1,12 +1,8 @@
-# INIT = 1
+# STEP = 1
 
 BEGIN {
 	pv_tbtniv = ""
 	beacons = ""
-	MAXLEN = 6 * 12
-	EMPTYLINE = 0
-	SPLIT = 1
-#print "launching..."
 }
 
 function pr() {
@@ -17,10 +13,14 @@ function pr() {
 		beacons_count = 0
 	}
 	header = sprintf("%39s %3d", pv_tbtniv, tbtniv_stats[pv_tbtniv])
+#line = 2
 	while(length(beacons) > MAXLEN) {
 		printf("%43s %s\n", header, substr(beacons, 0, MAXLEN - 1))
 		beacons = substr(beacons, MAXLEN + 1)
 		header = sprintf("%39s %3s", ".", ".")
+#header = sprintf("%39s %3s", pv_tbtniv, ".")
+#header = sprintf("%39s %3s", ".", sprintf("l%d", line))
+#line++
 		if (EMPTYLINE == "1")
 			printf("\n")
 	}
@@ -30,21 +30,16 @@ function pr() {
 	beacons = ""; pv_tbtniv = ""
 }
 
-# tbtniv...
-INIT == 1 {
-#	print "INIT=1", $1, " detected"
-	if (tbtniv_stats[$1] == 0)
-		tbtniv_count++
-	tbtniv_stats[$1]++
-	beacons_count++
-#print $1, tbtniv_stats[$1]
+# occ tbtniv...
+STEP == 0 {
+	tbtniv_count++
+	tbtniv_stats[$2] = $1
+	beacons_count += $1
 }
 
 # beacon tbtniv_size tbtniv...
 # keep the given order
-INIT == 0 {
-#	print "INIT=0", $1, " detected"
-#print ">> ", $1, $2, $3, pv_tbtniv
+STEP == 1 {
 	if (pv_tbtniv == $3) {
 		beacons = sprintf("%s%-5s ", beacons, $1)
 	} else {
