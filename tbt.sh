@@ -84,7 +84,7 @@ info "Date CA: ${DATE_CA}, livraison: ${DATE_DELIVER}"
 
 # with stats inside, 4 cols
 # >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCC
-RAW="${WD}raw.txt"
+RAW="${WD}.raw.txt"
 # >> TBTNIV_OCC TBTNIV
 TBTNIV_STATS="${WD}tbtniv.stats.txt"
 # tbtniv used in that session
@@ -93,7 +93,7 @@ TBTNIV="${WD}tbtniv.txt"
 # same but sorted in two different ways
 RAW_TB="${WD}raw_tbtniv_balise.txt"
 RAW_NTB="${WD}raw_nb_tbtniv_balise.txt"
-TMP="${WD}tmp.txt"
+TMP="${WD}.tmp.txt"
 
 # extract data from balisep file
 #awk -f raw.tbtniv.awk "${INPUT}" > "${RAW}"
