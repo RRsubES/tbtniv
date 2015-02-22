@@ -1,14 +1,11 @@
-# extract tbtniv from BALISEP, display it sorted
+# extract tbtniv from BALISEP, display it sorted with stats
 function lvl(t) {
 	return (length(t) + 1) / 4
 }
 
 function store(b, p) {
-	if (b == "")
+	if (b == "" || p == GROUND)
 		return
-#printf("%s %d %s\n", b, lvl(p), p) 
-#printf("%s %d %s\n", b, lvl(p), p) | "sort -k2,2n -k3,3 -k1,1 | cut -d' ' -f 1,3"
-#print("%s\n", p) > TBTNIV
 	tbtniv[p]++
 	db[b] = p
 }
@@ -24,11 +21,9 @@ BEGIN {
 }
 
 /^1 [A-Z0-9]{2,5} .*$/ {
-	if (prev_tbtniv != GROUND) {
-		store(prev_beacon, prev_tbtniv)
-		prev_tbtniv = GROUND
-		prev_beacon = $2
-	}
+	store(prev_beacon, prev_tbtniv)
+	prev_tbtniv = GROUND
+	prev_beacon = $2
 	next
 }
 
@@ -43,5 +38,5 @@ BEGIN {
 END {
 	store(prev_beacon, prev_tbtniv)
 	for (b in db)
-		printf("%s %d %s %d\n", b, lvl(db[b]), db[b], tbtniv[db[b]])
+		print b, lvl(db[b]), db[b], tbtniv[db[b]]
 }
