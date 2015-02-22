@@ -12,7 +12,20 @@ function usage {
 	if [ ! "x$1" == "x" ]; then
 		echo "[E] $1" >&2
 	fi
-	echo "usage fn" >&2
+	cat >&2 <<EOF
+usage: ./$(basename $0) [-blh] [-n NB] BALISEP_FIC
+Paramètres:
+-b	    : annule la séparation des blocs de balises.
+-l    	    : sépare chaque ligne par une ligne vide.
+-h	    : affiche l'aide
+-n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
+BALISEP_FIC : spécifie le nom/chemin vers le fichier BALISEP à traiter.
+
+Les fichiers générés seront dans un répertoire créé dans le repertoire courant,
+    ayant pour nom: {DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
+
+e.g.: ./$(basename $0) -b -l -n 16 BALISEP.15mar 
+EOF
 	exit 1
 }
 
@@ -51,12 +64,9 @@ while (($# > 0)); do
 		shift;;
 	-n)
 		if ! [[ $2 =~ ^[0-9]+$ ]]; then
-			usage "le champ après -n doit être un nombre"
+			usage "le champ suivant -n doit être un nombre"
 		fi
 		MAX_BEACONS_PER_LINE=$2
-		shift; shift;;
-	-p)
-		
 		shift; shift;;
 	*)
 		if [ -e "$1" ] && [ -f "$1" ]; then
@@ -74,33 +84,37 @@ if [ ! -e "${INPUT}" ]; then
 fi
 check_header "${INPUT}"
 get_dates_from_header $HEADER
-info "Date CA: ${DATE_CA}, livraison: ${DATE_DELIVER}" 
+info "Date CA: ${DATE_CA}, livrée le: ${DATE_DELIVER}" 
 
 WD="./${DATE}_CA${DATE_CA}/"
 { mkdir -p "${WD}"; } > /dev/null
 if [ $? -ne 0 ]; then
 	usage "impossible de créer le repertoire ${WD}"
 fi
-info "Création du répertoire [${WD:2:${#WD}-3}]"
+info "Résultats disponibles dans [${WD:2:${#WD}-3}]"
+# duplicate source file in ${WD}
+{ cp "${INPUT}" "${WD}BALISEP"; } > /dev/null
 
-# with stats inside, 4 cols
+# 4 columns, data extracted from balisep. (hidden)
 # >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCC
-RAW="${WD}.raw.txt"
+DATA="${WD}.data.txt"
 # >> TBTNIV_OCC TBTNIV
 TBTNIV_STATS="${WD}.tbtniv.stats.txt"
 # tbtniv used in that session
 # >> TBTNIV (only)
 TBTNIV="${WD}tbtniv.txt"
-# same but sorted in two different ways
+# ${DATA} sorted in two different ways and displayed with pr.awk
 BALISEP_TB="${WD}balisep_tbtniv_balise.txt"
 BALISEP_NTB="${WD}balisep_nb_tbtniv_balise.txt"
+# temporary file (hidden)
 TMP="${WD}.tmp.txt"
 
 # extract data from balisep file
-#awk -f raw.tbtniv.awk "${INPUT}" > "${RAW}"
-#sort -k2,2n -k3,3 "${RAW}" | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
-awk -f raw.tbtniv.awk "${INPUT}" > "${RAW}"
-sort -k2,2n -k3,3 "${RAW}" | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
+#sed 's/\r//g' "${INPUT}" |
+awk -f raw.tbtniv.awk "${INPUT}" | tee "${DATA}" | sort -k2,2n -k3,3 \
+	| awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
+#| cut -d' ' -f 3 | uniq -c > "${TBTNIV_STATS}"
+# erase stats
 awk '{ print $2 }' "${TBTNIV_STATS}" > "${TBTNIV}"
 
 declare -A ary
@@ -112,13 +126,15 @@ ary[2,"FILE"]="${BALISEP_NTB}"
 ary[2,"SORT_COMMENT"]="Nb. > Tbtniv > Bal."
 ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
 
+info "Tri:"
 for i in {1..2}; do
 	DST=${ary[$i,"FILE"]}
 	COMMENT=${ary[$i,"SORT_COMMENT"]}
-	info "\"${COMMENT}\" dans [${DST##*/}]"
+	info "	- \"${COMMENT}\" dans [${DST##*/}]"
 
-	sort ${ary[$i,"SORT"]} < "${RAW}" > "${TMP}"
+	sort ${ary[$i,"SORT"]} < "${DATA}" > "${TMP}"
 	awk -f pr.awk "STEP=0" "${TBTNIV_STATS}" "EMPTYLINE=${SEP_LINES}"\
 		"SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" "STEP=1" "${TMP}"\
 		> "${DST}"
+	rm -f "${TMP}" 2>&1 > /dev/null
 done
