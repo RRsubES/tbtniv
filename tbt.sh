@@ -38,25 +38,24 @@ MAX_BEACONS_PER_LINE=5
 DATE_CA=
 DATE_DELIVER=
 DATE=$(date '+%0d%0b%Y-%0kh%0M')
-WD="./${DATE}/"
 
 while (($# > 0)); do
 	case "$1" in
-	--blocks|-b)
+	-b)
 		SEP_BLOCKS=$((!(($SEP_BLOCKS))))
 		shift;;
-	--help|-h)
+	-h)
 		usage;;
-	--lines|-l)
+	-l)
 		SEP_LINES=$((!(($SEP_LINES))))
 		shift;;
-	--nb|--beacons|-n)
+	-n)
 		if ! [[ $2 =~ ^[0-9]+$ ]]; then
 			usage "le champ après -n doit être un nombre"
 		fi
 		MAX_BEACONS_PER_LINE=$2
 		shift; shift;;
-	--prev|-p)
+	-p)
 		
 		shift; shift;;
 	*)
@@ -70,11 +69,6 @@ while (($# > 0)); do
 done
 MAXLEN=$((6 * (MAX_BEACONS_PER_LINE > 0 ? MAX_BEACONS_PER_LINE : 1) ))
 
-{ mkdir -p "${WD}"; } > /dev/null
-if [ $? -ne 0 ]; then
-	usage "impossible de créer le repertoire ${WD}"
-fi
-
 if [ ! -e "${INPUT}" ]; then
 	usage "aucun nom de fichier BALISEP transmis"
 fi
@@ -82,32 +76,49 @@ check_header "${INPUT}"
 get_dates_from_header $HEADER
 info "Date CA: ${DATE_CA}, livraison: ${DATE_DELIVER}" 
 
+WD="./${DATE}_CA${DATE_CA}/"
+{ mkdir -p "${WD}"; } > /dev/null
+if [ $? -ne 0 ]; then
+	usage "impossible de créer le repertoire ${WD}"
+fi
+info "Création du répertoire [${WD:2:${#WD}-3}]"
+
 # with stats inside, 4 cols
 # >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCC
 RAW="${WD}.raw.txt"
 # >> TBTNIV_OCC TBTNIV
-TBTNIV_STATS="${WD}tbtniv.stats.txt"
+TBTNIV_STATS="${WD}.tbtniv.stats.txt"
 # tbtniv used in that session
 # >> TBTNIV (only)
 TBTNIV="${WD}tbtniv.txt"
 # same but sorted in two different ways
-RAW_TB="${WD}raw_tbtniv_balise.txt"
-RAW_NTB="${WD}raw_nb_tbtniv_balise.txt"
+BALISEP_TB="${WD}balisep_tbtniv_balise.txt"
+BALISEP_NTB="${WD}balisep_nb_tbtniv_balise.txt"
 TMP="${WD}.tmp.txt"
 
 # extract data from balisep file
 #awk -f raw.tbtniv.awk "${INPUT}" > "${RAW}"
 #sort -k2,2n -k3,3 "${RAW}" | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
-awk -f raw.tbtniv.awk "${INPUT}" | tee "${RAW}" | sort -k2,2n -k3,3 \
-	    | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
+awk -f raw.tbtniv.awk "${INPUT}" > "${RAW}"
+sort -k2,2n -k3,3 "${RAW}" | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
 awk '{ print $2 }' "${TBTNIV_STATS}" > "${TBTNIV}"
 
-sort -k2,2n -k3,3 -k1,1 < "${RAW}" > "${TMP}"
-awk -f pr.awk "STEP=0" "${TBTNIV_STATS}" "EMPTYLINE=${SEP_LINES}" \
-	    "SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" "STEP=1" "${TMP}"\
-	    > "${RAW_TB}"
+declare -A ary
+ary[1,"FILE"]="${BALISEP_TB}"
+ary[1,"SORT_COMMENT"]="Tbtniv > Bal."
+ary[1,"SORT"]="-k2,2n -k3,3 -k1,1"
 
-sort -k4,4n -k2,2n -k3,3 -k1,1 < "${RAW}" > "${TMP}"
-awk -f pr.awk "STEP=0" "${TBTNIV_STATS}" "EMPTYLINE=${SEP_LINES}" \
-	    "SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" "STEP=1" "${TMP}"\
-	    > "${RAW_NTB}"
+ary[2,"FILE"]="${BALISEP_NTB}"
+ary[2,"SORT_COMMENT"]="Nb. > Tbtniv > Bal."
+ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
+
+for i in {1..2}; do
+	DST=${ary[$i,"FILE"]}
+	COMMENT=${ary[$i,"SORT_COMMENT"]}
+	info "\"${COMMENT}\" dans [${DST##*/}]"
+
+	sort ${ary[$i,"SORT"]} < "${RAW}" > "${TMP}"
+	awk -f pr.awk "STEP=0" "${TBTNIV_STATS}" "EMPTYLINE=${SEP_LINES}"\
+		"SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" "STEP=1" "${TMP}"\
+		> "${DST}"
+done
