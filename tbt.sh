@@ -8,9 +8,10 @@ function get_dates_from_header {
 }
 
 function usage {
-	# $1 contains the error to display if needed
-	if [ ! "x$1" == "x" ]; then
-		echo "[E] $1" >&2
+	# $1 contains the exit error code
+	# $2 contains the error msg to display if needed
+	if [ ! "x$2" == "x" ]; then
+		echo "[E] $2" >&2
 	fi
 	cat >&2 <<EOF
 usage: ./$(basename $0) [-blh] [-n NB] BALISEP_FIC
@@ -26,7 +27,7 @@ Les fichiers générés seront dans un répertoire créé dans le repertoire cou
 
 e.g.: ./$(basename $0) -b -l -n 16 BALISEP.15mar 
 EOF
-	exit 1
+	exit $1
 }
 
 function check_header {
@@ -50,7 +51,7 @@ SEP_BLOCKS=1
 MAX_BEACONS_PER_LINE=5
 DATE_CA=
 DATE_DELIVER=
-DATE=$(date '+%0d%0b%Y-%0kh%0M')
+DATE=$(date '+%Y-%0m-%0d_%0kh%0M')
 
 while (($# > 0)); do
 	case "$1" in
@@ -58,13 +59,13 @@ while (($# > 0)); do
 		SEP_BLOCKS=$((!(($SEP_BLOCKS))))
 		shift;;
 	-h)
-		usage;;
+		usage 1;;
 	-l)
 		SEP_LINES=$((!(($SEP_LINES))))
 		shift;;
 	-n)
 		if ! [[ $2 =~ ^[0-9]+$ ]]; then
-			usage "le champ suivant -n doit être un nombre"
+			usage 10 "le champ suivant -n doit être un nombre"
 		fi
 		MAX_BEACONS_PER_LINE=$2
 		shift; shift;;
@@ -73,23 +74,26 @@ while (($# > 0)); do
 			INPUT="$1"
 			shift
 		else
-			usage "champ $1 de type inconnu"
+			usage 11 "champ $1 de type inconnu"
 		fi;;
 	esac
 done
 MAXLEN=$((6 * (MAX_BEACONS_PER_LINE > 0 ? MAX_BEACONS_PER_LINE : 1) ))
 
 if [ ! -e "${INPUT}" ]; then
-	usage "aucun nom de fichier BALISEP transmis"
+	usage 12 "aucun nom de fichier BALISEP transmis"
 fi
 check_header "${INPUT}"
 get_dates_from_header $HEADER
 info "Date CA: ${DATE_CA}, livrée le: ${DATE_DELIVER}" 
 
 WD="./${DATE}_CA${DATE_CA}/"
+if [ -e "${WD}" ]; then
+	usage 14 "repertoire ${WD} déjà utilisé, le supprimer ou attendre un peu"
+fi
 { mkdir -p "${WD}"; } > /dev/null
 if [ $? -ne 0 ]; then
-	usage "impossible de créer le repertoire ${WD}"
+	usage 15 "impossible de créer le repertoire ${WD}"
 fi
 info "Résultats disponibles dans [${WD:2:${#WD}-3}]"
 # duplicate source file in ${WD}
