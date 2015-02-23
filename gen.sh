@@ -118,8 +118,8 @@ TMP="${WD}.tmp.txt"
 
 # extract data from balisep file
 #sed 's/\r//g' "${INPUT}" |
-awk -f raw.tbtniv.awk "${INPUT}" | tee "${DATA}" | sort -k2,2n -k3,3 \
-	| awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
+awk -f raw.tbtniv.awk "${INPUT}" | sort -k1,1 | tee "${DATA}" |
+	sort -k2,2n -k3,3 | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
 #| cut -d' ' -f 3 | uniq -c > "${TBTNIV_STATS}"
 # erase stats
 awk '{ print $2 }' "${TBTNIV_STATS}" > "${TBTNIV}"
