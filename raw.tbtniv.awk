@@ -16,7 +16,6 @@ BEGIN {
 	GROUND = "000"
 	prev_tbtniv = GROUND
 	prev_beacon = ""
-	tbtniv_count = 0
 	beacons_nr = 0
 }
 
