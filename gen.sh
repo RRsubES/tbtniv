@@ -1,11 +1,8 @@
 #!/bin/bash
 
-
 # parsing with a function call, be lazy!
 function get_dates_from_header {
 	# echo date is DD-MM-YY, changing it to YYYY-MM-DD
-	#DATE_CA=$7
-	#DATE_DELIVER=${10}
 	DATE_CA=$(echo ${7} | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 	DATE_DELIVER=$(echo ${10} | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 }

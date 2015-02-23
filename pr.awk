@@ -13,14 +13,10 @@ function pr() {
 		beacons_count = 0
 	}
 	header = sprintf("%39s %3d", pv_tbtniv, tbtniv_stats[pv_tbtniv])
-#line = 2
 	while(length(beacons) > MAXLEN) {
 		printf("%43s %s\n", header, substr(beacons, 0, MAXLEN - 1))
 		beacons = substr(beacons, MAXLEN + 1)
 		header = sprintf("%39s %3s", ".", ".")
-#header = sprintf("%39s %3s", pv_tbtniv, ".")
-#header = sprintf("%39s %3s", ".", sprintf("l%d", line))
-#line++
 		if (EMPTYLINE == "1")
 			printf("\n")
 	}

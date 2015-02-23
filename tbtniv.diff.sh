@@ -1,12 +1,34 @@
+#!/bin/bash
+#syntax: ./$(basename $0) ./DIR1 ./DIR2
+#./DIR1 et ./DIR2 are created with gen.sh.
+
+function check_dir {
+	if [ ! -e "$1" ] || [ ! -d "$1" ] ; then
+		echo "Répertoire $1 non valide" >&2
+		exit 1
+	fi
+}
+
+function check_file {
+	if [ ! -e "$1" ] || [ ! -f "$1" ] ; then
+		echo "Fichier $1 non trouvé" >&2
+		exit 2
+	fi
+}
+
+check_dir "$1"
+check_dir "$2"
+
 DIR1="${1%/}"
 CA1="${DIR1#.*CA}"
-#CA1=$(echo ${DIR1#.*CA} | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 FILE1="${DIR1}/tbtniv.txt"
 
 DIR2="${2%/}"
 CA2="${DIR2#.*CA}"
-#CA2=$(echo ${DIR2#.*CA} | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 FILE2="${DIR2}/tbtniv.txt"
+
+check_file "${FILE1}"
+check_file "${FILE2}"
 
 DST="diff.CA${CA1}.CA${CA2}.txt"
 
