@@ -85,17 +85,19 @@ function process {
 	# $1 = input file
 	# reset instance values
 	INPUT="$1"
-	DATE=$(date '+%Y-%0m-%0d_%0kh%0M')
+	DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
 	DATE_CA=
+	BEACON_NR=
+	TBTNIV_NR=
 
 	# check header and fill dates from it
-	if ! get_date_ca_from_header "$(head -1 ${INPUT} | sed 's/\r//g')"; then
+	if ! get_date_ca_from_header "$(head -1 ${INPUT})"; then
 		return 10
 	fi
 	info "* ${INPUT}: date CA ${DATE_CA}" 
 
 	# create Working Directory
-	WD="./${DATE}_CA${DATE_CA}/"
+	WD="./${DATE_GEN}_CA${DATE_CA}/"
 	if [ -e "${WD}" ]; then
 		err "repertoire ${WD} déjà utilisé, abandon."
 		return 11
@@ -106,8 +108,6 @@ function process {
 		return 12
 	fi
 	info "Résultats disponibles dans [${WD:2:${#WD}-3}]"
-	# duplicate/rename source file in ${WD}
-	{ cp "${INPUT}" "${WD}BALISEP"; } > /dev/null
 
 	# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCCURRENCES
 	DATA="${WD}.data.txt"
@@ -128,6 +128,20 @@ function process {
 	#| cut -d' ' -f 3 | uniq -c > "${TBTNIV_STATS}"
 	# erase stats
 	awk '{ print $2 }' "${TBTNIV_STATS}" > "${TBTNIV}"
+	
+	TBTNIV_NR=$(wc -l < "${TBTNIV}")
+	BEACON_NR=$(wc -l < "${DATA}")
+	# store information in .do_not_modify.txt
+	# duplicate/rename source file in ${WD}
+	{ cp "${INPUT}" "${WD}BALISEP"; } > /dev/null
+	# store variables
+	cat > "${WD}.do_not_modify.txt" <<EOF
+# DO NOT MODIFY, NE PAS MODIFIER
+DATE_CA="${DATE_CA}"
+DATE_GEN="${DATE_GEN}"
+BEACON_NR="${BEACON_NR}"
+TBTNIV_NR="${TBTNIV_NR}"
+EOF
 
 	declare -A ary
 	ary[1,"FILE"]="${BALISEP_TB}"
@@ -138,7 +152,7 @@ function process {
 	ary[2,"SORT_COMMENT"]="Nb. > Tbtniv > Bal."
 	ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
 
-	info "Statistiques: $(wc -l < ${TBTNIV}) tbtniv, $(wc -l < ${DATA}) balise(s)"
+	info "Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s)"
 	for i in {1..2}; do
 		DST=${ary[$i,"FILE"]}
 		COMMENT=${ary[$i,"SORT_COMMENT"]}
