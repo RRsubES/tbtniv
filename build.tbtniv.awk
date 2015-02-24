@@ -3,11 +3,11 @@ function lvl(t) {
 	return (length(t) + 1) / 4
 }
 
-function store(b, p) {
-	if (b == "" || p == GROUND)
+function store(b, t) {
+	if (b == "" || t == GROUND)
 		return
-	tbtniv[p]++
-	db[b] = p
+	tbtniv_nr[t]++
+	tbtniv[b] = t
 }
 
 BEGIN {
@@ -16,7 +16,6 @@ BEGIN {
 	GROUND = "000"
 	prev_tbtniv = GROUND
 	prev_beacon = ""
-	beacons_nr = 0
 }
 
 /^1 [A-Z0-9]{2,5} .*$/ {
@@ -36,6 +35,6 @@ BEGIN {
 
 END {
 	store(prev_beacon, prev_tbtniv)
-	for (b in db)
-		print b, lvl(db[b]), db[b], tbtniv[db[b]]
+	for (b in tbtniv)
+		print b, lvl(tbtniv[b]), tbtniv[b], tbtniv_nr[tbtniv[b]] | "sort -k1,1"
 }

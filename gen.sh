@@ -89,7 +89,12 @@ info "Date CA: ${DATE_CA}, livrée le: ${DATE_DELIVER}"
 
 WD="./${DATE}_CA${DATE_CA}/"
 if [ -e "${WD}" ]; then
-	usage 14 "repertoire ${WD} déjà utilisé, le supprimer ou attendre un peu"
+# checks if stdin is an interactive terminal or not
+#if [ -t 0 ]; then
+#	rm -Rfi "${WD}"
+#else
+		usage 14 "repertoire ${WD} déjà utilisé, le supprimer ou attendre un peu"
+#fi
 fi
 { mkdir -p "${WD}"; } > /dev/null
 if [ $? -ne 0 ]; then
@@ -115,7 +120,7 @@ TMP="${WD}.tmp.txt"
 
 # extract data from balisep file
 #sed 's/\r//g' "${INPUT}" |
-awk -f raw.tbtniv.awk "${INPUT}" | sort -k1,1 | tee "${DATA}" |
+awk -f build.tbtniv.awk "${INPUT}" | tee "${DATA}" |
 	sort -k2,2n -k3,3 | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
 #| cut -d' ' -f 3 | uniq -c > "${TBTNIV_STATS}"
 # erase stats
