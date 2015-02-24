@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# parsing with a function call, be lazy!
-
 function usage {
 	# $1 contains the exit error code
 	# $2 contains the error msg to display if needed
@@ -9,18 +7,18 @@ function usage {
 		info "[E]${INPUT:+${INPUT#*/} :}] $2"
 	fi
 	cat >&2 <<EOF
-usage: ./$(basename $0) [-blh] [-n NB] BALISEP_FIC
+usage: ./$(basename $0) [-b] [-l] [-h] [-n NB] BALISEP_1 BALISEP_2...
 Paramètres:
--b	    : sépare chaque bloc de tbtniv par une espace.
--l    	    : sépare chaque ligne par une ligne vide.
+-b	    : sépare chaque bloc de tbtniv par une interligne 
+-l    	    : sépare chaque ligne par une interligne.
 -h	    : affiche l'aide
 -n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
-BALISEP_FIC : spécifie le nom/chemin vers le fichier BALISEP à traiter.
+BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
 
 Les fichiers générés seront dans un répertoire créé dans le repertoire courant,
     ayant pour nom: {DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
 
-e.g.: ./$(basename $0) -b -l -n 16 BALISEP.15mar 
+e.g.: ./$(basename $0) -b -l -n 16 BALISEP.15fev BALISEP.15mar 
 EOF
 	exit $1
 }
@@ -29,7 +27,7 @@ function get_date_ca_from_header {
 	local HEADER_TEMPLATE='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
 	{ echo "$1" | sed 's/\r//g' | grep "$HEADER_TEMPLATE"; } > /dev/null
 	if [ $? -ne 0 ]; then
-		err "${INPUT}, entête de fichier non valide, forme retenue:" 
+		err "entête de fichier non valide, forme retenue:" 
 		err "$(echo ${HEADER_TEMPLATE:1:-2} | sed 's/\\//g')"
 		return 1
 	fi
@@ -152,6 +150,7 @@ function process {
 		rm -f "${TMP}" 2>&1 > /dev/null
 	done
 	info ""
+	return 0
 }
 
 #remove last char ${X::-1} or ${X%?}
