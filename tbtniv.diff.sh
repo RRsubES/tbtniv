@@ -20,11 +20,11 @@ check_dir "$1"
 check_dir "$2"
 
 DIR1="${1%/}"
-CA1="${DIR1#.*CA}"
+CA1="${DIR1#*CA}"
 FILE1="${DIR1}/tbtniv.txt"
 
 DIR2="${2%/}"
-CA2="${DIR2#.*CA}"
+CA2="${DIR2#*CA}"
 FILE2="${DIR2}/tbtniv.txt"
 
 check_file "${FILE1}"
@@ -52,4 +52,4 @@ END {
 		printf("%39s%2s%-39s\n", add[i], "", del[i]);
 }' >> "${DST}"
 
-echo "le résultat se trouve dans ${DST}"
+echo "Le résultat se trouve dans ${DST}"

@@ -135,6 +135,7 @@ ary[2,"FILE"]="${BALISEP_NTB}"
 ary[2,"SORT_COMMENT"]="Nb. > Tbtniv > Bal."
 ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
 
+info "Statistiques: $(wc -l < ${TBTNIV}) tbtniv, $(wc -l < ${DATA}) balise(s)"
 info "Tri:"
 for i in {1..2}; do
 	DST=${ary[$i,"FILE"]}
