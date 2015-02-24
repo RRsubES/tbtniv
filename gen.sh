@@ -1,17 +1,12 @@
 #!/bin/bash
 
 # parsing with a function call, be lazy!
-function get_dates_from_header {
-	# echo date is DD-MM-YY, changing it to YYYY-MM-DD
-	DATE_CA=$(echo ${7} | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
-	DATE_DELIVER=$(echo ${10} | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
-}
 
 function usage {
 	# $1 contains the exit error code
 	# $2 contains the error msg to display if needed
 	if [ ! "x$2" == "x" ]; then
-		echo "[E] $2" >&2
+		info "[E]${INPUT:+${INPUT#*/} :}] $2"
 	fi
 	cat >&2 <<EOF
 usage: ./$(basename $0) [-blh] [-n NB] BALISEP_FIC
@@ -30,28 +25,35 @@ EOF
 	exit $1
 }
 
-function check_header {
-	#check balisep header file $1
-	HEADER_TEMPLATE='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
-	HEADER=$(head -1 "$1")
-	{ echo "${HEADER}" | sed 's/\r//g' | grep "$HEADER_TEMPLATE"; } > /dev/null
+function get_date_ca_from_header {
+	local HEADER_TEMPLATE='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
+	{ echo "$1" | sed 's/\r//g' | grep "$HEADER_TEMPLATE"; } > /dev/null
 	if [ $? -ne 0 ]; then
-		info "entête de fichier non valide, forme retenue:" 
-		info "$(echo ${HEADER_TEMPLATE:1:${#HEADER_TEMPLATE}-2} | sed 's/\\//g')"
-		exit 3
+		err "${INPUT}, entête de fichier non valide, forme retenue:" 
+		err "$(echo ${HEADER_TEMPLATE:1:-2} | sed 's/\\//g')"
+		return 1
 	fi
+	# echo date is DD-MM-YY, changing it to YYYY-MM-DD
+	DATE_CA=$(echo "$1" | awk '{print $7}' | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
+	return 0
 }
 
 function info {
 	echo "$1"
 } >&2
 
+function err {
+	echo "[E]${INPUT:+${INPUT}: }$1"
+} >&2
+
+# Default values
 SEP_LINES=0
 SEP_BLOCKS=0
 MAX_BEACONS_PER_LINE=5
-DATE_CA=
-DATE_DELIVER=
-DATE=$(date '+%Y-%0m-%0d_%0kh%0M')
+
+INPUT=
+FILES=
+FILES_NR=0
 
 while (($# > 0)); do
 	case "$1" in
@@ -65,86 +67,94 @@ while (($# > 0)); do
 		shift;;
 	-n)
 		if ! [[ $2 =~ ^[0-9]+$ ]]; then
-			usage 10 "le champ suivant -n doit être un nombre"
+			usage 10 "le champ -n doit être suivi d'un nombre"
 		fi
-		MAX_BEACONS_PER_LINE=$2
+		MAX_BEACONS_PER_LINE=$(($2>0?$2:1))
 		shift; shift;;
 	*)
 		if [ -e "$1" ] && [ -f "$1" ]; then
-			INPUT="$1"
+			FILES[${FILES_NR}]="$1"
+			FILES_NR=$((FILES_NR + 1))
 			shift
 		else
 			usage 11 "champ $1 de type inconnu"
 		fi;;
 	esac
 done
-MAXLEN=$((6 * (MAX_BEACONS_PER_LINE > 0 ? MAX_BEACONS_PER_LINE : 1) ))
+MAXLEN=$((6 * MAX_BEACONS_PER_LINE))
 
-if [ ! -e "${INPUT}" ]; then
-	usage 12 "aucun nom de fichier BALISEP transmis"
-fi
-check_header "${INPUT}"
-get_dates_from_header $HEADER
-info "Date CA: ${DATE_CA}, livrée le: ${DATE_DELIVER}" 
+function process {
+	# $1 = input file
+	# reset instance values
+	INPUT="$1"
+	DATE=$(date '+%Y-%0m-%0d_%0kh%0M')
+	DATE_CA=
 
-WD="./${DATE}_CA${DATE_CA}/"
-if [ -e "${WD}" ]; then
-# checks if stdin is an interactive terminal or not
-#if [ -t 0 ]; then
-#	rm -Rfi "${WD}"
-#else
-		usage 14 "repertoire ${WD} déjà utilisé, le supprimer ou attendre un peu"
-#fi
-fi
-{ mkdir -p "${WD}"; } > /dev/null
-if [ $? -ne 0 ]; then
-	usage 15 "impossible de créer le repertoire ${WD}"
-fi
-info "Résultats disponibles dans [${WD:2:${#WD}-3}]"
-# duplicate source file in ${WD}
-{ cp "${INPUT}" "${WD}BALISEP"; } > /dev/null
+	# check header and fill dates from it
+	if ! get_date_ca_from_header "$(head -1 ${INPUT} | sed 's/\r//g')"; then
+		return 10
+	fi
+	info "* ${INPUT}: date CA ${DATE_CA}" 
 
-# 4 columns, data extracted from balisep. (hidden)
-# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCC
-DATA="${WD}.data.txt"
-# >> TBTNIV_OCC TBTNIV
-TBTNIV_STATS="${WD}.tbtniv.stats.txt"
-# tbtniv used in that session
-# >> TBTNIV (only)
-TBTNIV="${WD}tbtniv.txt"
-# ${DATA} sorted in two different ways and displayed with pr.awk
-BALISEP_TB="${WD}balisep_tbtniv_balise.txt"
-BALISEP_NTB="${WD}balisep_nb_tbtniv_balise.txt"
-# temporary file (hidden)
-TMP="${WD}.tmp.txt"
+	# create Working Directory
+	WD="./${DATE}_CA${DATE_CA}/"
+	if [ -e "${WD}" ]; then
+		err "repertoire ${WD} déjà utilisé, abandon."
+		return 11
+	fi
+	{ mkdir -p "${WD}"; } > /dev/null
+	if [ $? -ne 0 ]; then
+		err "impossible de créer le repertoire ${WD}"
+		return 12
+	fi
+	info "Résultats disponibles dans [${WD:2:${#WD}-3}]"
+	# duplicate/rename source file in ${WD}
+	{ cp "${INPUT}" "${WD}BALISEP"; } > /dev/null
 
-# extract data from balisep file
-#sed 's/\r//g' "${INPUT}" |
-awk -f build.tbtniv.awk "${INPUT}" | tee "${DATA}" |
-	sort -k2,2n -k3,3 | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
-#| cut -d' ' -f 3 | uniq -c > "${TBTNIV_STATS}"
-# erase stats
-awk '{ print $2 }' "${TBTNIV_STATS}" > "${TBTNIV}"
+	# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCCURRENCES
+	DATA="${WD}.data.txt"
+	# >> TBTNIV_OCCURRENCES TBTNIV
+	TBTNIV_STATS="${WD}.tbtniv.stats.txt"
+	# >> TBTNIV 
+	TBTNIV="${WD}tbtniv.txt"
+	# ${DATA} sorted in two manners
+	BALISEP_TB="${WD}balisep_tbtniv_balise.txt"
+	BALISEP_NTB="${WD}balisep_nb_tbtniv_balise.txt"
+	# temporary file (deleted after use)
+	TMP="${WD}.tmp.txt"
 
-declare -A ary
-ary[1,"FILE"]="${BALISEP_TB}"
-ary[1,"SORT_COMMENT"]="Tbtniv > Bal."
-ary[1,"SORT"]="-k2,2n -k3,3 -k1,1"
+	# extract data from balisep file
+	#sed 's/\r//g' "${INPUT}" |
+	awk -f build.tbtniv.awk "${INPUT}" | tee "${DATA}" |
+		sort -k2,2n -k3,3 | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
+	#| cut -d' ' -f 3 | uniq -c > "${TBTNIV_STATS}"
+	# erase stats
+	awk '{ print $2 }' "${TBTNIV_STATS}" > "${TBTNIV}"
 
-ary[2,"FILE"]="${BALISEP_NTB}"
-ary[2,"SORT_COMMENT"]="Nb. > Tbtniv > Bal."
-ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
+	declare -A ary
+	ary[1,"FILE"]="${BALISEP_TB}"
+	ary[1,"SORT_COMMENT"]="Tbtniv > Bal."
+	ary[1,"SORT"]="-k2,2n -k3,3 -k1,1"
 
-info "Statistiques: $(wc -l < ${TBTNIV}) tbtniv, $(wc -l < ${DATA}) balise(s)"
-info "Tri:"
-for i in {1..2}; do
-	DST=${ary[$i,"FILE"]}
-	COMMENT=${ary[$i,"SORT_COMMENT"]}
-	info "	- \"${COMMENT}\" dans [${DST##*/}]"
+	ary[2,"FILE"]="${BALISEP_NTB}"
+	ary[2,"SORT_COMMENT"]="Nb. > Tbtniv > Bal."
+	ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
 
-	sort ${ary[$i,"SORT"]} < "${DATA}" > "${TMP}"
-	awk -f pr.awk "STEP=0" "${TBTNIV_STATS}" "EMPTYLINE=${SEP_LINES}"\
-		"SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" "STEP=1" "${TMP}"\
-		> "${DST}"
-	rm -f "${TMP}" 2>&1 > /dev/null
+	info "Statistiques: $(wc -l < ${TBTNIV}) tbtniv, $(wc -l < ${DATA}) balise(s)"
+	for i in {1..2}; do
+		DST=${ary[$i,"FILE"]}
+		COMMENT=${ary[$i,"SORT_COMMENT"]}
+
+		sort ${ary[$i,"SORT"]} < "${DATA}" > "${TMP}"
+		awk -f pr.awk "STEP=0" "${TBTNIV_STATS}" "EMPTYLINE=${SEP_LINES}"\
+			"SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" "STEP=1" "${TMP}"\
+			> "${DST}"
+		rm -f "${TMP}" 2>&1 > /dev/null
+	done
+	info ""
+}
+
+#remove last char ${X::-1} or ${X%?}
+for i in $(seq 0 $((FILES_NR - 1))); do
+	process "${FILES[$i]}"
 done
