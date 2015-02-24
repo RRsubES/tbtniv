@@ -16,7 +16,7 @@ function usage {
 	cat >&2 <<EOF
 usage: ./$(basename $0) [-blh] [-n NB] BALISEP_FIC
 Paramètres:
--b	    : annule la séparation des blocs de balises.
+-b	    : sépare chaque bloc de tbtniv par une espace.
 -l    	    : sépare chaque ligne par une ligne vide.
 -h	    : affiche l'aide
 -n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
@@ -47,7 +47,7 @@ function info {
 } >&2
 
 SEP_LINES=0
-SEP_BLOCKS=1
+SEP_BLOCKS=0
 MAX_BEACONS_PER_LINE=5
 DATE_CA=
 DATE_DELIVER=
