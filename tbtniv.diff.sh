@@ -53,3 +53,7 @@ END {
 }' >> "${DST}"
 
 echo "Le résultat se trouve dans ${DST}"
+# it is possible to convert from UTF8 to latin1 (windows)
+# use iconv -l to get the list of available charset
+# iconv -f UTF-8 -t latin1 INPUT_FILE > OUTPUT_FILE
+
