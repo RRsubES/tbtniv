@@ -107,7 +107,7 @@ function process {
 		err "impossible de créer le repertoire ${WD}"
 		return 12
 	fi
-	info "  Résultats disponibles dans [${WD:2:${#WD}-3}]"
+	info "  Résultats disponibles dans [${WD:2:-1}]"
 
 	# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCCURRENCES
 	DATA="${WD}.data.txt"
@@ -145,22 +145,19 @@ EOF
 
 	declare -A ary
 	ary[1,"FILE"]="${BALISEP_TB}"
-	ary[1,"SORT_COMMENT"]="Tbtniv > Bal."
 	ary[1,"SORT"]="-k2,2n -k3,3 -k1,1"
 
 	ary[2,"FILE"]="${BALISEP_NTB}"
-	ary[2,"SORT_COMMENT"]="Nb. > Tbtniv > Bal."
 	ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
 
 	info "  Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s)"
 	for i in {1..2}; do
-		DST=${ary[$i,"FILE"]}
-		COMMENT=${ary[$i,"SORT_COMMENT"]}
-
+		DST=
 		sort ${ary[$i,"SORT"]} < "${DATA}" > "${TMP}"
 		awk -f pr.awk "STEP=0" "${TBTNIV_STATS}" "EMPTYLINE=${SEP_LINES}"\
 			"SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" "STEP=1" "${TMP}"\
-			> "${DST}"
+			> "${ary[$i,"FILE"]}"
+
 		rm -f "${TMP}" 2>&1 > /dev/null
 	done
 	info ""

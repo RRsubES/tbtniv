@@ -1,5 +1,3 @@
-# STEP = 1
-
 BEGIN {
 	pv_tbtniv = ""
 	beacons = ""
