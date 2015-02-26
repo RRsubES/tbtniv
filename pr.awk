@@ -2,12 +2,13 @@ BEGIN {
 	pv_tbtniv = ""
 	pv_tbtniv_nr = ""
 	beacons = ""
-	printf("%39s %3s %s\n", sprintf("tbtniv(%d)", TBTNIV_NR), "Nb.", sprintf("Balises(%d)", BEACON_NR)) 
 }
 
 function pr() {
-	if (FNR == 1)
+	if (FNR == 1) {
+		printf("%39s %3s %s\n", sprintf("tbtniv(%d)", TBTNIV_NR), "Nb.", sprintf("Balises(%d)", BEACON_NR)) 
 		return
+	}
 	header = sprintf("%39s %3d", pv_tbtniv, pv_tbtniv_nr)
 	while(length(beacons) > MAXLEN) {
 		printf("%43s %s\n", header, substr(beacons, 0, MAXLEN - 1))
