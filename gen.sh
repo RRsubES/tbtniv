@@ -80,12 +80,15 @@ while (($# > 0)); do
 	esac
 done
 MAXLEN=$((6 * MAX_BEACONS_PER_LINE))
+DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
 
 function process {
 	# $1 = input file
 	# reset instance values
 	INPUT="$1"
-	DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
+	# better to keepi one time for the whole instance,
+	# much easier to complete filenames; by DATE_CA...
+	# DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
 	DATE_CA=
 	BEACON_NR=
 	TBTNIV_NR=
@@ -107,7 +110,9 @@ function process {
 		err "impossible de créer le repertoire ${WD}"
 		return 12
 	fi
-	info "  Résultats disponibles dans [${WD:2:-1}]"
+	# info "  Résultats disponibles dans [${WD:2:-1}]"
+	# does not work in my Cygwin, bash version probly outdated
+	info "  Résultats disponibles dans [${WD:2:${#WD}-3}]"
 
 	# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCCURRENCES
 	DATA="${WD}.data.txt"
