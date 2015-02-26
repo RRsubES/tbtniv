@@ -19,6 +19,14 @@ function check_file {
 	fi
 }
 
+if [ $# -ne 2 ] || [ "$1" == "-h" ]; then
+	cat >&2 <<EOF
+usage: ./$(basename $0) VIEUX_REPERTOIRE NOUVEAU_REPERTOIRE
+e.g.: ./$(basename $0) REPERTOIRE_DATE_CA_N REPERTOIRE_DATE_CA_N+1
+EOF
+	exit 1
+fi
+
 declare -A DB
 for i in $(seq 1 2); do
 	DIR="${1%/}"
