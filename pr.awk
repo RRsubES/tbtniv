@@ -1,16 +1,14 @@
 BEGIN {
 	pv_tbtniv = ""
+	pv_tbtniv_nr = ""
 	beacons = ""
+	printf("%39s %3s %s\n", sprintf("tbtniv(%d)", TBTNIV_NR), "Nb.", sprintf("Balises(%d)", BEACON_NR)) 
 }
 
 function pr() {
-	if (pv_tbtniv == "")
+	if (FNR == 1)
 		return
-	if (beacons_count > 0) {
-		printf("%39s %3s %s\n", sprintf("tbtniv(%d)", tbtniv_count), "Nb.", sprintf("Balises(%d)", beacons_count)) 
-		beacons_count = 0
-	}
-	header = sprintf("%39s %3d", pv_tbtniv, tbtniv_stats[pv_tbtniv])
+	header = sprintf("%39s %3d", pv_tbtniv, pv_tbtniv_nr)
 	while(length(beacons) > MAXLEN) {
 		printf("%43s %s\n", header, substr(beacons, 0, MAXLEN - 1))
 		beacons = substr(beacons, MAXLEN + 1)
@@ -19,28 +17,20 @@ function pr() {
 			printf("\n")
 	}
 	printf("%43s %s\n", header, substr(beacons, 0, length(beacons) - 1))
-	if (SPLIT == "1" || EMPTYLINE =="1")
+	if (SPLIT == "1" || EMPTYLINE == "1")
 		printf("\n")
-	beacons = ""; pv_tbtniv = ""
+	beacons = ""; pv_tbtniv = ""; pv_tbtniv_nr = ""
 }
 
-# occ tbtniv...
-STEP == 0 {
-	tbtniv_count++
-	tbtniv_stats[$2] = $1
-	beacons_count += $1
-}
-
-# beacon tbtniv_size tbtniv...
+# beacon tbtniv_size tbtniv tbtniv_occurence
 # keep the given order
-STEP == 1 {
-	if (pv_tbtniv == $3) {
-		beacons = sprintf("%s%-5s ", beacons, $1)
-	} else {
+{
+	if (pv_tbtniv != $3) {
 		pr()
-		beacons = sprintf("%-5s ", $1)
 		pv_tbtniv = $3
+		pv_tbtniv_nr = $4
 	}
+	beacons = sprintf("%s%-5s ", beacons, $1)
 }
 
 END {

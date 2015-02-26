@@ -118,16 +118,12 @@ function process {
 	# ${DATA} sorted in two manners
 	BALISEP_TB="${WD}balisep_tbtniv_balise.txt"
 	BALISEP_NTB="${WD}balisep_nb_tbtniv_balise.txt"
-	# temporary file (deleted after use)
-	TMP="${WD}.tmp.txt"
 
 	# extract data from balisep file
 	#sed 's/\r//g' "${INPUT}" |
 	awk -f build.tbtniv.awk "${INPUT}" | tee "${DATA}" |
-		sort -k2,2n -k3,3 | awk '{ print $3 }' | uniq -c > "${TBTNIV_STATS}"
-	#| cut -d' ' -f 3 | uniq -c > "${TBTNIV_STATS}"
-	# erase stats
-	awk '{ print $2 }' "${TBTNIV_STATS}" > "${TBTNIV}"
+		sort -k2,2n -k3,3 | awk '{ print $3 }' | uniq -c |
+		tee "${TBTNIV_STATS}" | awk '{ print $2 }' > "${TBTNIV}"
 	
 	TBTNIV_NR=$(wc -l < "${TBTNIV}")
 	BEACON_NR=$(wc -l < "${DATA}")
@@ -152,13 +148,11 @@ EOF
 
 	info "  Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s)"
 	for i in {1..2}; do
-		DST=
-		sort ${ary[$i,"SORT"]} < "${DATA}" > "${TMP}"
-		awk -f pr.awk "STEP=0" "${TBTNIV_STATS}" "EMPTYLINE=${SEP_LINES}"\
-			"SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" "STEP=1" "${TMP}"\
+		sort ${ary[$i,"SORT"]} < "${DATA}" | 
+			awk -f pr.awk "TBTNIV_NR=${TBTNIV_NR}" \
+			"BEACON_NR=${BEACON_NR}" "EMPTYLINE=${SEP_LINES}" \
+			"SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" \
 			> "${ary[$i,"FILE"]}"
-
-		rm -f "${TMP}" 2>&1 > /dev/null
 	done
 	info ""
 	return 0
