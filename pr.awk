@@ -1,7 +1,7 @@
 BEGIN {
 	pv_tbtniv = ""
-	pv_tbtniv_nr = ""
 	beacons = ""
+	prefix = ""
 }
 
 function pr() {
@@ -9,18 +9,17 @@ function pr() {
 		printf("%39s %3s %s\n", sprintf("tbtniv(%d)", TBTNIV_NR), "Nb.", sprintf("Balises(%d)", BEACON_NR)) 
 		return
 	}
-	header = sprintf("%39s %3d", pv_tbtniv, pv_tbtniv_nr)
 	while(length(beacons) > MAXLEN) {
-		printf("%43s %s\n", header, substr(beacons, 0, MAXLEN - 1))
+		printf("%43s %s\n", prefix, substr(beacons, 0, MAXLEN - 1))
 		beacons = substr(beacons, MAXLEN + 1)
-		header = sprintf("%39s %3s", ".", ".")
+		prefix = sprintf("%39s %3s", ".", ".")
 		if (EMPTYLINE == "1")
 			printf("\n")
 	}
-	printf("%43s %s\n", header, substr(beacons, 0, length(beacons) - 1))
+	printf("%43s %s\n", prefix, substr(beacons, 0, length(beacons) - 1))
 	if (SPLIT == "1" || EMPTYLINE == "1")
 		printf("\n")
-	beacons = ""; pv_tbtniv = ""; pv_tbtniv_nr = ""
+	beacons = ""; pv_tbtniv = ""; prefix = ""
 }
 
 # beacon tbtniv_size tbtniv tbtniv_occurence
@@ -29,7 +28,7 @@ function pr() {
 	if (pv_tbtniv != $3) {
 		pr()
 		pv_tbtniv = $3
-		pv_tbtniv_nr = $4
+		prefix = sprintf("%39s %3d", $3, $4)
 	}
 	beacons = sprintf("%s%-5s ", beacons, $1)
 }
