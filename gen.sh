@@ -4,7 +4,7 @@ function usage {
 	# $1 contains the exit error code
 	# $2 contains the error msg to display if needed
 	if [ ! "x$2" == "x" ]; then
-		info "[E]${INPUT:+${INPUT#*/} :}] $2"
+		err "$2"
 	fi
 	cat >&2 <<EOF
 usage: ./$(basename $0) [-b] [-l] [-h] [-n NB] BALISEP_1 BALISEP_2...
@@ -41,7 +41,8 @@ function info {
 } >&2
 
 function err {
-	echo "[E]${INPUT:+${INPUT}: }$1"
+	echo "[E]${INPUT:+${INPUT#*/} :} $1"
+	# echo "[E]${INPUT:+${INPUT} :} $1"
 } >&2
 
 # Default values
@@ -57,38 +58,37 @@ while (($# > 0)); do
 	case "$1" in
 	-b)
 		SEP_BLOCKS=$((!(($SEP_BLOCKS))))
-		shift;;
+		;;
 	-h)
 		usage 1;;
 	-l)
 		SEP_LINES=$((!(($SEP_LINES))))
-		shift;;
+		;;
 	-n)
 		if ! [[ $2 =~ ^[0-9]+$ ]]; then
 			usage 10 "le champ -n doit être suivi d'un nombre"
 		fi
 		MAX_BEACONS_PER_LINE=$(($2>0?$2:1))
-		shift; shift;;
+		shift;;
 	*)
 		if [ -e "$1" ] && [ -f "$1" ]; then
 			FILES[${FILES_NR}]="$1"
 			FILES_NR=$((FILES_NR + 1))
-			shift
 		else
 			usage 11 "champ $1 de type inconnu"
 		fi;;
 	esac
+	shift
 done
 MAXLEN=$((6 * MAX_BEACONS_PER_LINE))
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
 
 function process {
 	# $1 = input file
-	# reset instance values
+	# Set instance values
 	INPUT="$1"
-	# better to keepi one time for the whole instance,
-	# much easier to complete filenames; by DATE_CA...
-	# DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
+	# better to keep DATE_GEN once for the whole instance,
+	# much easier to complete filenames...
 	DATE_CA=
 	BEACON_NR=
 	TBTNIV_NR=
@@ -120,9 +120,6 @@ function process {
 	TBTNIV_STATS="${WD}.tbtniv.stats.txt"
 	# >> TBTNIV 
 	TBTNIV="${WD}tbtniv.txt"
-	# ${DATA} sorted in two manners
-	BALISEP_TB="${WD}balisep_tbtniv_balise.txt"
-	BALISEP_NTB="${WD}balisep_nb_tbtniv_balise.txt"
 
 	# extract data from balisep file
 	#sed 's/\r//g' "${INPUT}" |
@@ -142,13 +139,17 @@ DATE_CA="${DATE_CA}"
 DATE_GEN="${DATE_GEN}"
 BEACON_NR="${BEACON_NR}"
 TBTNIV_NR="${TBTNIV_NR}"
+# ARGUMENTS
+SEP_LINES="${SEP_LINES}"
+SEP_BLOCKS="${SEP_BLOCKS}"
+MAX_BEACONS_PER_LINE="${MAX_BEACONS_PER_LINE}"
 EOF
 
 	declare -A ary
-	ary[1,"FILE"]="${BALISEP_TB}"
+	ary[1,"FILE"]="${WD}balisep_tbtniv_balise.txt"
 	ary[1,"SORT"]="-k2,2n -k3,3 -k1,1"
 
-	ary[2,"FILE"]="${BALISEP_NTB}"
+	ary[2,"FILE"]="${WD}balisep_nb_tbtniv_balise.txt"
 	ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
 
 	info "  Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s)"
@@ -163,7 +164,6 @@ EOF
 	return 0
 }
 
-#remove last char ${X::-1} or ${X%?}
 for i in $(seq 0 $((FILES_NR - 1))); do
 	process "${FILES[$i]}"
 done
