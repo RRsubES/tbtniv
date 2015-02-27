@@ -60,7 +60,8 @@ while (($# > 0)); do
 		SEP_BLOCKS=$((!(($SEP_BLOCKS))))
 		;;
 	-h)
-		usage 1;;
+		usage 1
+		;;
 	-l)
 		SEP_LINES=$((!(($SEP_LINES))))
 		;;
@@ -69,14 +70,16 @@ while (($# > 0)); do
 			usage 10 "le champ -n doit être suivi d'un nombre"
 		fi
 		MAX_BEACONS_PER_LINE=$(($2>0?$2:1))
-		shift;;
+		shift
+		;;
 	*)
 		if [ -e "$1" ] && [ -f "$1" ]; then
 			FILES[${FILES_NR}]="$1"
 			FILES_NR=$((FILES_NR + 1))
 		else
 			usage 11 "champ $1 de type inconnu"
-		fi;;
+		fi
+		;;
 	esac
 	shift
 done
@@ -154,10 +157,11 @@ EOF
 
 	info "  Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s)"
 	for i in {1..2}; do
+	# for i in $(seq 1 $(( ${#ary[@]} / 2 )) ); do
 		sort ${ary[$i,"SORT"]} < "${DATA}" | 
 			awk -f pr.awk "TBTNIV_NR=${TBTNIV_NR}" \
-			"BEACON_NR=${BEACON_NR}" "EMPTYLINE=${SEP_LINES}" \
-			"SPLIT=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" \
+			"BEACON_NR=${BEACON_NR}" "SEP_LINES=${SEP_LINES}" \
+			"SEP_BLOCKS=${SEP_BLOCKS}" "MAXLEN=${MAXLEN}" \
 			> "${ary[$i,"FILE"]}"
 	done
 	info ""
