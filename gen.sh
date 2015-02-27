@@ -7,18 +7,19 @@ function usage {
 		err "$2"
 	fi
 	cat >&2 <<EOF
-usage: ./$(basename $0) [-b] [-l] [-h] [-n NB] BALISEP_1 BALISEP_2...
+usage: ./$(basename $0) [-b] [-l] [-h] [-n NB] [-t TAG ] BALISEP_1 BALISEP_2...
 Paramètres:
--b	    : sépare chaque bloc de tbtniv par une interligne 
+-b	    : sépare chaque bloc de tbtniv par une interligne.
 -l    	    : sépare chaque ligne par une interligne.
 -h	    : affiche l'aide
 -n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
+-t TAG      : ajoute TAG au début du nom du répertoire.
 BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
 
 Les fichiers générés seront dans un répertoire créé dans le repertoire courant,
-    ayant pour nom: {DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
+    ayant pour nom: {TAG_}{DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
 
-e.g.: ./$(basename $0) -b -l -n 16 BALISEP.15fev BALISEP.15mar 
+e.g.: ./$(basename $0) -b -l -n 16 -t rr BALISEP.15fev BALISEP.15mar 
 EOF
 	exit $1
 }
@@ -28,7 +29,8 @@ function get_date_ca_from_header {
 	{ echo "$1" | sed 's/\r//g' | grep "$HEADER_TEMPLATE"; } > /dev/null
 	if [ $? -ne 0 ]; then
 		err "entête de fichier non valide, forme retenue:" 
-		err "$(echo ${HEADER_TEMPLATE:1:-2} | sed 's/\\//g')"
+		# err "$(echo ${HEADER_TEMPLATE:1:-2} | sed 's/\\//g')"
+		err "$(echo ${HEADER_TEMPLATE:1:${#HEADER_TEMPLATE}-3} | sed 's/\\//g')"
 		return 1
 	fi
 	# echo date is DD-MM-YY, changing it to YYYY-MM-DD
@@ -49,6 +51,7 @@ function err {
 SEP_LINES=0
 SEP_BLOCKS=0
 MAX_BEACONS_PER_LINE=5
+TAG=
 
 INPUT=
 FILES=
@@ -66,11 +69,15 @@ while (($# > 0)); do
 		SEP_LINES=$((!(($SEP_LINES))))
 		;;
 	-n)
-		if ! [[ $2 =~ ^[0-9]+$ ]]; then
+		shift
+		if ! [[ $1 =~ ^[0-9]+$ ]]; then
 			usage 10 "le champ -n doit être suivi d'un nombre"
 		fi
-		MAX_BEACONS_PER_LINE=$(($2>0?$2:1))
+		MAX_BEACONS_PER_LINE=$(($1>0?$1:1))
+		;;
+	-t)	
 		shift
+		TAG="${1}"
 		;;
 	*)
 		if [ -e "$1" ] && [ -f "$1" ]; then
@@ -103,7 +110,7 @@ function process {
 	info "* ${INPUT}: date CA ${DATE_CA}" 
 
 	# create Working Directory
-	WD="./${DATE_GEN}_CA${DATE_CA}/"
+	WD="./${TAG:+${TAG}_}${DATE_GEN}_CA${DATE_CA}/"
 	if [ -e "${WD}" ]; then
 		err "repertoire ${WD} déjà utilisé, abandon."
 		return 11
@@ -146,6 +153,7 @@ TBTNIV_NR="${TBTNIV_NR}"
 SEP_LINES="${SEP_LINES}"
 SEP_BLOCKS="${SEP_BLOCKS}"
 MAX_BEACONS_PER_LINE="${MAX_BEACONS_PER_LINE}"
+TAG="${TAG}"
 EOF
 
 	declare -A ary
