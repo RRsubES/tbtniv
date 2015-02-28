@@ -24,17 +24,15 @@ EOF
 	exit $1
 }
 
-function get_date_ca_from_header {
+function is_balisep {
 	local HEADER_TEMPLATE='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
-	{ echo "$1" | sed 's/\r//g' | grep "$HEADER_TEMPLATE"; } > /dev/null
+	{ head -1 "$1" | sed 's/\r//g' | grep "$HEADER_TEMPLATE"; } > /dev/null
 	if [ $? -ne 0 ]; then
 		err "entête de fichier non valide, forme retenue:" 
 		# err "$(echo ${HEADER_TEMPLATE:1:-2} | sed 's/\\//g')"
 		err "$(echo ${HEADER_TEMPLATE:1:${#HEADER_TEMPLATE}-3} | sed 's/\\//g')"
 		return 1
 	fi
-	# echo date is DD-MM-YY, changing it to YYYY-MM-DD
-	DATE_CA=$(echo "$1" | awk '{print $7}' | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 	return 0
 }
 
@@ -55,33 +53,30 @@ WD_PREFIX=
 INPUT=
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
 
-function process {
-	# $1 = input file
+function process_balisep {
+	# $1 = BALISEP file
 	# Set instance values
 	INPUT="$1"
 	# better to keep DATE_GEN once for the whole instance,
 	# much easier to complete filenames...
 	MAXLEN=$((6 * MAX_BEACONS_PER_LINE))
-	DATE_CA=
+	# echo date is DD-MM-YY, changing it to YYYY-MM-DD
+	DATE_CA=$(head -1 "${INPUT}" | tr -s ' ' | cut -d' ' -f7 | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 	BEACON_NR=
 	TBTNIV_NR=
 
-	# check header and fill dates from it
-	if ! get_date_ca_from_header "$(head -1 ${INPUT})"; then
-		return 10
-	fi
 	info "* ${INPUT}: date CA ${DATE_CA}" 
 
 	# create Working Directory
 	WD="./${WD_PREFIX:+${WD_PREFIX}_}${DATE_GEN}_CA${DATE_CA}/"
 	if [ -e "${WD}" ]; then
 		err "repertoire ${WD} déjà utilisé, abandon."
-		return 11
+		return 10
 	fi
 	{ mkdir -p "${WD}"; } > /dev/null
 	if [ $? -ne 0 ]; then
 		err "impossible de créer le repertoire ${WD}"
-		return 12
+		return 11
 	fi
 	# info "  Résultats disponibles dans [${WD:2:-1}]"
 	# does not work in my Cygwin, bash version probly outdated
@@ -139,6 +134,10 @@ EOF
 	return 0
 }
 
+#if [ -p /dev/stdin ]; then
+#	usage 1 "pipe indisponible dans cette version"
+#fi
+
 while (($# > 0)); do
 	case "$1" in
 	-b)
@@ -162,8 +161,8 @@ while (($# > 0)); do
 		WD_PREFIX="${1}"
 		;;
 	*)
-		if [ -e "$1" ] && [ -f "$1" ]; then
-			process "$1"
+		if [ -e "$1" ] && [ -f "$1" ] && is_balisep "$1"; then
+			process_balisep "$1"
 		else
 			usage 11 "champ $1 de type inconnu"
 		fi
