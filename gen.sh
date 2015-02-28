@@ -61,6 +61,7 @@ function process_balisep {
 	# much easier to complete filenames...
 	MAXLEN=$((6 * MAX_BEACONS_PER_LINE))
 	# echo date is DD-MM-YY, changing it to YYYY-MM-DD
+	# DATE_CA=$(head -1 "${INPUT}" | awk '{print $7}' | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 	DATE_CA=$(head -1 "${INPUT}" | tr -s ' ' | cut -d' ' -f7 | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 	BEACON_NR=
 	TBTNIV_NR=

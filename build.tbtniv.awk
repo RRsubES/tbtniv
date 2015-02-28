@@ -1,4 +1,4 @@
-# extract tbtniv from BALISEP, display it sorted with stats
+# extract tbtniv from BALISEP, display it how it arrived but with stats
 function lvl(t) {
 	return (length(t) + 1) / 4
 }
@@ -6,6 +6,9 @@ function lvl(t) {
 function store(b, t) {
 	if (b == "" || t == GROUND)
 		return
+	# if sort is used, the order gonna differ
+	# numbers appear at the end here...
+	beacon[beacon_nr++] = b
 	tbtniv_nr[t]++
 	tbtniv[b] = t
 }
@@ -35,6 +38,8 @@ BEGIN {
 
 END {
 	store(prev_beacon, prev_tbtniv)
-	for (b in tbtniv)
-		print b, lvl(tbtniv[b]), tbtniv[b], tbtniv_nr[tbtniv[b]] | "sort -k1,1"
+	for(i = 0; i < beacon_nr; i++) {
+		b = beacon[i]; t = tbtniv[b]
+		print b, lvl(t), t, tbtniv_nr[t]
+	}
 }
