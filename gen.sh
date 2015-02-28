@@ -19,7 +19,7 @@ BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
 Les fichiers générés seront dans un répertoire créé dans le repertoire courant,
     ayant pour nom: {PREFIX_}{DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
 
-e.g.: ./$(basename $0) -b -l -n 16 -p rr BALISEP.15fev BALISEP.15mar 
+e.g.: ./$(basename $0) -b -l -n 10 BALISEP.15fev -n 15 -p rr BALISEP.15mar 
 EOF
 	exit $1
 }
