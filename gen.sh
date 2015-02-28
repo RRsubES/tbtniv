@@ -7,19 +7,19 @@ function usage {
 		err "$2"
 	fi
 	cat >&2 <<EOF
-usage: ./$(basename $0) [-b] [-l] [-h] [-n NB] [-t TAG ] BALISEP_1 BALISEP_2...
+usage: ./$(basename $0) [-b] [-l] [-h] [-n NB] [-p PREFIX ] BALISEP_1 BALISEP_2...
 Paramètres:
 -b	    : sépare chaque bloc de tbtniv par une interligne.
 -l    	    : sépare chaque ligne par une interligne.
 -h	    : affiche l'aide
 -n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
--t TAG      : ajoute TAG au début du nom du répertoire.
+-p PREFIX   : ajoute PREFIX au nom du répertoire.
 BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
 
 Les fichiers générés seront dans un répertoire créé dans le repertoire courant,
-    ayant pour nom: {TAG_}{DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
+    ayant pour nom: {PREFIX_}{DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
 
-e.g.: ./$(basename $0) -b -l -n 16 -t rr BALISEP.15fev BALISEP.15mar 
+e.g.: ./$(basename $0) -b -l -n 16 -p rr BALISEP.15fev BALISEP.15mar 
 EOF
 	exit $1
 }
@@ -44,53 +44,15 @@ function info {
 
 function err {
 	echo "[E]${INPUT:+${INPUT#*/} :} $1"
-	# echo "[E]${INPUT:+${INPUT} :} $1"
 } >&2
 
 # Default values
 SEP_LINES=0
 SEP_BLOCKS=0
 MAX_BEACONS_PER_LINE=5
-TAG=
+WD_PREFIX=
 
 INPUT=
-FILES=
-FILES_NR=0
-
-while (($# > 0)); do
-	case "$1" in
-	-b)
-		SEP_BLOCKS=$((!(($SEP_BLOCKS))))
-		;;
-	-h)
-		usage 1
-		;;
-	-l)
-		SEP_LINES=$((!(($SEP_LINES))))
-		;;
-	-n)
-		shift
-		if ! [[ $1 =~ ^[0-9]+$ ]]; then
-			usage 10 "le champ -n doit être suivi d'un nombre"
-		fi
-		MAX_BEACONS_PER_LINE=$(($1>0?$1:1))
-		;;
-	-t)	
-		shift
-		TAG="${1}"
-		;;
-	*)
-		if [ -e "$1" ] && [ -f "$1" ]; then
-			FILES[${FILES_NR}]="$1"
-			FILES_NR=$((FILES_NR + 1))
-		else
-			usage 11 "champ $1 de type inconnu"
-		fi
-		;;
-	esac
-	shift
-done
-MAXLEN=$((6 * MAX_BEACONS_PER_LINE))
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
 
 function process {
@@ -99,6 +61,7 @@ function process {
 	INPUT="$1"
 	# better to keep DATE_GEN once for the whole instance,
 	# much easier to complete filenames...
+	MAXLEN=$((6 * MAX_BEACONS_PER_LINE))
 	DATE_CA=
 	BEACON_NR=
 	TBTNIV_NR=
@@ -110,7 +73,7 @@ function process {
 	info "* ${INPUT}: date CA ${DATE_CA}" 
 
 	# create Working Directory
-	WD="./${TAG:+${TAG}_}${DATE_GEN}_CA${DATE_CA}/"
+	WD="./${WD_PREFIX:+${WD_PREFIX}_}${DATE_GEN}_CA${DATE_CA}/"
 	if [ -e "${WD}" ]; then
 		err "repertoire ${WD} déjà utilisé, abandon."
 		return 11
@@ -153,7 +116,7 @@ TBTNIV_NR="${TBTNIV_NR}"
 SEP_LINES="${SEP_LINES}"
 SEP_BLOCKS="${SEP_BLOCKS}"
 MAX_BEACONS_PER_LINE="${MAX_BEACONS_PER_LINE}"
-TAG="${TAG}"
+WD_PREFIX="${WD_PREFIX}"
 EOF
 
 	declare -A ary
@@ -176,6 +139,36 @@ EOF
 	return 0
 }
 
-for i in $(seq 0 $((FILES_NR - 1))); do
-	process "${FILES[$i]}"
+while (($# > 0)); do
+	case "$1" in
+	-b)
+		SEP_BLOCKS=$((!(($SEP_BLOCKS))))
+		;;
+	-h)
+		usage 1
+		;;
+	-l)
+		SEP_LINES=$((!(($SEP_LINES))))
+		;;
+	-n)
+		shift
+		if ! [[ $1 =~ ^[0-9]+$ ]]; then
+			usage 10 "le champ -n doit être suivi d'un nombre"
+		fi
+		MAX_BEACONS_PER_LINE=$(($1>0?$1:1))
+		;;
+	-p)	
+		shift
+		WD_PREFIX="${1}"
+		;;
+	*)
+		if [ -e "$1" ] && [ -f "$1" ]; then
+			process "$1"
+		else
+			usage 11 "champ $1 de type inconnu"
+		fi
+		;;
+	esac
+	shift
 done
+
