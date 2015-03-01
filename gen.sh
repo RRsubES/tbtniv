@@ -11,6 +11,7 @@ usage: ./$(basename $0) [-b] [-l] [-h] [-n NB] [-p PREFIX ] BALISEP_1 BALISEP_2.
 Paramètres:
 -b	    : sépare chaque bloc de tbtniv par une interligne.
 -l    	    : sépare chaque ligne par une interligne.
+-d	    : affiche le(s) répertoires créés sur l'entrée standard
 -h	    : affiche l'aide
 -n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
 -p PREFIX   : ajoute PREFIX au nom du répertoire.
@@ -49,6 +50,7 @@ SEP_LINES=0
 SEP_BLOCKS=0
 MAX_BEACONS_PER_LINE=5
 WD_PREFIX=
+PRINT_WD=0
 
 INPUT=
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
@@ -113,6 +115,7 @@ SEP_LINES="${SEP_LINES}"
 SEP_BLOCKS="${SEP_BLOCKS}"
 MAX_BEACONS_PER_LINE="${MAX_BEACONS_PER_LINE}"
 WD_PREFIX="${WD_PREFIX}"
+PRINT_WD="${PRINT_WD}"
 EOF
 
 	declare -A ary
@@ -132,6 +135,9 @@ EOF
 			> "${ary[$i,"FILE"]}"
 	done
 	info ""
+	if [ ${PRINT_WD} -ne 0 ]; then
+		echo "${WD}"
+	fi
 	return 0
 }
 
@@ -143,6 +149,9 @@ while (($# > 0)); do
 	case "$1" in
 	-b)
 		SEP_BLOCKS=$((!(($SEP_BLOCKS))))
+		;;
+	-d)	
+		PRINT_WD=$((!(($PRINT_WD))))
 		;;
 	-h)
 		usage 1
