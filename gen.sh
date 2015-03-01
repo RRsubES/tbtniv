@@ -11,10 +11,10 @@ usage: ./$(basename $0) [-b] [-l] [-h] [-n NB] [-p PREFIX ] BALISEP_1 BALISEP_2.
 Paramètres:
 -b	    : sépare chaque bloc de tbtniv par une interligne.
 -l    	    : sépare chaque ligne par une interligne.
--d	    : affiche le(s) répertoires créés sur l'entrée standard
+-d	    : affiche le nom des répertoires créés sur l'entrée standard.
 -h	    : affiche l'aide
 -n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
--p PREFIX   : ajoute PREFIX au nom du répertoire.
+-p PREFIX   : ajoute PREFIX au nom du répertoire (espaces remplacées par _).
 BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
 
 Les fichiers générés seront dans un répertoire créé dans le repertoire courant,
@@ -168,7 +168,7 @@ while (($# > 0)); do
 		;;
 	-p)	
 		shift
-		WD_PREFIX="${1}"
+		WD_PREFIX="${1// /_}"
 		;;
 	*)
 		if [ -e "$1" ] && [ -f "$1" ] && is_balisep "$1"; then
