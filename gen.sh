@@ -6,8 +6,8 @@ function usage {
 	if [ ! "x$2" == "x" ]; then
 		err "$2"
 	fi
-	cat >&2 <<EOF
-usage: ./$(basename $0) [-b] [-l] [-h] [-n NB] [-p PREFIX ] BALISEP_1 BALISEP_2...
+	! [ $QUIET -ne 0 ] && cat >&2 <<EOF
+usage: ./$(basename $0) [-b] [-l] [-d] [-h] [-n NB] [-p PREFIX ] [ -q ] BALISEP_1 BALISEP_2...
 Paramètres:
 -b	    : sépare chaque bloc de tbtniv par une interligne.
 -l    	    : sépare chaque ligne par une interligne.
@@ -15,34 +15,36 @@ Paramètres:
 -h	    : affiche l'aide
 -n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
 -p PREFIX   : ajoute PREFIX au nom du répertoire (espaces remplacées par _).
+-q	    : mode silencieux.
 BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
 
 Les fichiers générés seront dans un répertoire créé dans le repertoire courant,
     ayant pour nom: {PREFIX_}{DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
 
-e.g.: ./$(basename $0) -b -l -n 10 BALISEP.15fev -n 15 -p rr BALISEP.15mar 
+e.g.: ./$(basename $0) -b -l -n 10 BALISEP.15fev -n 15 -p ibp BALISEP.15mar 
+e.g.: ./$(basename $0) -p "ibp rr" BALISEP.15mar -p "" BALISEP.15fev
 EOF
 	exit $1
 }
 
 function is_balisep {
-	local HEADER_TEMPLATE='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
-	{ head -1 "$1" | sed 's/\r//g' | grep "$HEADER_TEMPLATE"; } > /dev/null
+	local HEADER='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
+	{ head -1 "$1" | sed 's/\r//g' | grep "$HEADER"; } > /dev/null
 	if [ $? -ne 0 ]; then
 		err "entête de fichier non valide, forme retenue:" 
-		# err "$(echo ${HEADER_TEMPLATE:1:-2} | sed 's/\\//g')"
-		err "$(echo ${HEADER_TEMPLATE:1:${#HEADER_TEMPLATE}-3} | sed 's/\\//g')"
+		# err "$(echo ${HEADER:1:-2} | sed 's/\\//g')"
+		err "$(echo ${HEADER:1:${#HEADER}-3} | sed 's/\\//g')"
 		return 1
 	fi
 	return 0
 }
 
 function info {
-	echo "$1"
+	! [ $QUIET -ne 0 ] && echo "$1"
 } >&2
 
 function err {
-	echo "[E]${INPUT:+${INPUT#*/} :} $1"
+	! [ $QUIET -ne 0 ] && echo "[E]${INPUT:+${INPUT#*/} :} $1"
 } >&2
 
 # Default values
@@ -51,6 +53,8 @@ SEP_BLOCKS=0
 MAX_BEACONS_PER_LINE=5
 WD_PREFIX=
 PRINT_WD=0
+QUIET=0
+# UMASK_DEFAULT=$(umask)
 
 INPUT=
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
@@ -71,6 +75,7 @@ function process_balisep {
 	info "* ${INPUT}: date CA ${DATE_CA}" 
 
 	# create Working Directory
+	# umask ${UMASK_DEFAULT}
 	WD="./${WD_PREFIX:+${WD_PREFIX}_}${DATE_GEN}_CA${DATE_CA}/"
 	if [ -e "${WD}" ]; then
 		err "repertoire ${WD} déjà utilisé, abandon."
@@ -84,6 +89,7 @@ function process_balisep {
 	# info "  Résultats disponibles dans [${WD:2:-1}]"
 	# does not work in my Cygwin, bash version probly outdated
 	info "  Résultats disponibles dans [${WD:2:${#WD}-3}]"
+	# umask 0222
 
 	# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCCURRENCES
 	DATA="${WD}.data.txt"
@@ -116,7 +122,9 @@ SEP_BLOCKS="${SEP_BLOCKS}"
 MAX_BEACONS_PER_LINE="${MAX_BEACONS_PER_LINE}"
 WD_PREFIX="${WD_PREFIX}"
 PRINT_WD="${PRINT_WD}"
+QUIET="${QUIET}"
 EOF
+	chmod gu-w "${WD}.do_not_modify.txt" 
 
 	declare -A ary
 	ary[1,"FILE"]="${WD}balisep_tbtniv_balise.txt"
@@ -169,6 +177,9 @@ while (($# > 0)); do
 	-p)	
 		shift
 		WD_PREFIX="${1// /_}"
+		;;
+	-q)
+		QUIET=$((!(($QUIET))))
 		;;
 	*)
 		if [ -e "$1" ] && [ -f "$1" ] && is_balisep "$1"; then
