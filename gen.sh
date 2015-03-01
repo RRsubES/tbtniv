@@ -6,7 +6,7 @@ function usage {
 	if [ ! "x$2" == "x" ]; then
 		err "$2"
 	fi
-	! [ $QUIET -ne 0 ] && cat >&2 <<EOF
+	cat >&2 <<EOF
 usage: ./$(basename $0) [-b] [-l] [-d] [-h] [-n NB] [-p PREFIX ] [ -q ] BALISEP_1 BALISEP_2...
 Paramètres:
 -b	    : sépare chaque bloc de tbtniv par une interligne.
@@ -40,11 +40,11 @@ function is_balisep {
 }
 
 function info {
-	! [ $QUIET -ne 0 ] && echo "$1"
+	[ $QUIET -eq 0 ] && echo "$1"
 } >&2
 
 function err {
-	! [ $QUIET -ne 0 ] && echo "[E]${INPUT:+${INPUT#*/} :} $1"
+	echo "[E]${INPUT:+${INPUT#*/} :} $1"
 } >&2
 
 # Default values
