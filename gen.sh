@@ -14,11 +14,12 @@ Paramètres:
 -d	    : affiche le nom des répertoires créés sur l'entrée standard.
 -h	    : affiche l'aide
 -n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
+-o DIR=./   : change le répertoire destination à DIR (rep courant par défaut).
 -p PREFIX   : ajoute PREFIX au nom du répertoire (espaces remplacées par _).
 -q	    : mode silencieux.
 BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
 
-Les fichiers générés seront dans un répertoire créé dans le repertoire courant,
+Les fichiers générés seront dans un répertoire créé dans un repertoire
     ayant pour nom: {PREFIX_}{DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
 
 e.g.: ./$(basename $0) -b -l -n 10 BALISEP.15fev -n 15 -p ibp BALISEP.15mar 
@@ -52,6 +53,7 @@ SEP_LINES=0
 SEP_BLOCKS=0
 MAX_BEACONS_PER_LINE=5
 WD_PREFIX=
+WD_ROOT=./
 PRINT_WD=0
 QUIET=0
 # UMASK_DEFAULT=$(umask)
@@ -76,7 +78,7 @@ function process_balisep {
 
 	# create Working Directory
 	# umask ${UMASK_DEFAULT}
-	WD="./${WD_PREFIX:+${WD_PREFIX}_}${DATE_GEN}_CA${DATE_CA}/"
+	WD="${WD_ROOT}${WD_PREFIX:+${WD_PREFIX}_}${DATE_GEN}_CA${DATE_CA}/"
 	if [ -e "${WD}" ]; then
 		err "repertoire ${WD} déjà utilisé, abandon."
 		return 10
@@ -86,9 +88,8 @@ function process_balisep {
 		err "impossible de créer le repertoire ${WD}"
 		return 11
 	fi
-	# info "  Résultats disponibles dans [${WD:2:-1}]"
 	# does not work in my Cygwin, bash version probly outdated
-	info "  Résultats disponibles dans [${WD:2:${#WD}-3}]"
+	info "  Résultats disponibles dans [${WD}]"
 	# umask 0222
 
 	# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCCURRENCES
@@ -121,6 +122,7 @@ SEP_LINES="${SEP_LINES}"
 SEP_BLOCKS="${SEP_BLOCKS}"
 MAX_BEACONS_PER_LINE="${MAX_BEACONS_PER_LINE}"
 WD_PREFIX="${WD_PREFIX}"
+WD_ROOT="${WD_ROOT}"
 PRINT_WD="${PRINT_WD}"
 QUIET="${QUIET}"
 EOF
@@ -173,6 +175,12 @@ while (($# > 0)); do
 			usage 10 "le champ -n doit être suivi d'un nombre"
 		fi
 		MAX_BEACONS_PER_LINE=$(($1>0?$1:1))
+		;;
+	-o)
+		shift
+		! [ -d "${1}" ] && usage 11 "${1} n'est pas un répertoire"
+		! [ -w "${1}" ] && usage 11 "${USER} n'a pas les droits en écriture dans ${1}"
+		WD_ROOT="${1%/}/"
 		;;
 	-p)	
 		shift
