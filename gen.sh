@@ -60,6 +60,7 @@ PRINT_WD=0
 QUIET=0
 RM_WAIT=20
 RM_AUTO=0
+RM_EPOCH=$(( RM_WAIT + $(date +%s)))
 
 INPUT=
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
@@ -116,6 +117,8 @@ function process_balisep {
 # DO NOT MODIFY, NE PAS MODIFIER
 DATE_CA="${DATE_CA}"
 DATE_GEN="${DATE_GEN}"
+RM_EPOCH="${RM_EPOCH}"
+RM_AUTO="${RM_AUTO}"
 BEACON_NR="${BEACON_NR}"
 TBTNIV_NR="${TBTNIV_NR}"
 # ARGUMENTS
