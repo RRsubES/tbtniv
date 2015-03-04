@@ -71,7 +71,8 @@ function check_dir {
 	files[4]=".data.txt"
 	files[5]=".do_not_modify.txt"
 	files[6]=".tbtniv.stats.txt"
-	for i in $(seq 0 6); do
+	files[7]="stats.txt"
+	for i in $(seq 0 7); do
 		if ! [ -e "${1}${files[$i]}" ]; then
 			return 1
 		fi
