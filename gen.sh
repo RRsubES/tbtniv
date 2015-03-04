@@ -7,8 +7,9 @@ function usage {
 		err "$2"
 	fi
 	cat >&2 <<EOF
-usage: ./$(basename $0) [-b] [-l] [-d] [-h] [-n NB] [-p PREFIX ] [ -q ] BALISEP_1 BALISEP_2...
+usage: ./$(basename $0) [-a] [-b] [-l] [-d] [-h] [-n NB] [-p PREFIX] [-q] BALISEP_1 BALISEP_2...
 Paramètres:
+-a	    : efface le répertoire ${RM_WAIT} secondes après sa génération.
 -b	    : sépare chaque bloc de tbtniv par une interligne.
 -l    	    : sépare chaque ligne par une interligne.
 -d	    : affiche le nom des répertoires créés sur l'entrée standard.
@@ -19,11 +20,12 @@ Paramètres:
 -q	    : mode silencieux.
 BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
 
-Les fichiers générés seront dans un répertoire créé dans un repertoire
-    ayant pour nom: {PREFIX_}{DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
+Les fichiers seront générés dans le chemin précisé par -o, dans un répertoire
+	au nom de: {PREFIX_}{DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
 
 e.g.: ./$(basename $0) -b -l -n 10 BALISEP.15fev -n 15 -p ibp BALISEP.15mar 
 e.g.: ./$(basename $0) -p "ibp rr" BALISEP.15mar -p "" BALISEP.15fev
+e.g.: ./$(basename $0) -o /tmp -a -b -d -q BALISEP.15mar
 EOF
 	exit $1
 }
@@ -56,7 +58,8 @@ WD_PREFIX=
 WD_ROOT=./
 PRINT_WD=0
 QUIET=0
-# UMASK_DEFAULT=$(umask)
+RM_WAIT=20
+RM_AUTO=0
 
 INPUT=
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
@@ -77,7 +80,6 @@ function process_balisep {
 	info "* ${INPUT}: date CA ${DATE_CA}" 
 
 	# create Working Directory
-	# umask ${UMASK_DEFAULT}
 	WD="${WD_ROOT}${WD_PREFIX:+${WD_PREFIX}_}${DATE_GEN}_CA${DATE_CA}/"
 	if [ -e "${WD}" ]; then
 		err "repertoire ${WD} déjà utilisé, abandon."
@@ -90,7 +92,6 @@ function process_balisep {
 	fi
 	# does not work in my Cygwin, bash version probly outdated
 	info "  Résultats disponibles dans [${WD}]"
-	# umask 0222
 
 	# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCCURRENCES
 	DATA="${WD}.data.txt"
@@ -148,6 +149,7 @@ EOF
 	if [ ${PRINT_WD} -ne 0 ]; then
 		echo "${WD}"
 	fi
+	[ ${RM_AUTO} -ne 0 ] && nohup bash -c "sleep ${RM_WAIT} && rm -Rf \"${WD}\"" &> /dev/null &
 	return 0
 }
 
@@ -188,6 +190,9 @@ while (($# > 0)); do
 		;;
 	-q)
 		QUIET=$((!(($QUIET))))
+		;;
+	-a)
+		RM_AUTO=$((!(($RM_AUTO))))
 		;;
 	*)
 		if [ -e "$1" ] && [ -f "$1" ] && is_balisep "$1"; then
