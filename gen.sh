@@ -138,8 +138,10 @@ EOF
 
 	ary[2,"FILE"]="${WD}balisep_nb_tbtniv_balise.txt"
 	ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
-
-	info "  Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s)"
+	cat > "${WD}stats.txt" <<EOF
+Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s).
+EOF
+	info "  $(cat "${WD}stats.txt")"
 	for i in {1..2}; do
 	# for i in $(seq 1 $(( ${#ary[@]} / 2 )) ); do
 		sort ${ary[$i,"SORT"]} < "${DATA}" | 
@@ -162,6 +164,9 @@ EOF
 
 while (($# > 0)); do
 	case "$1" in
+	-a)
+		RM_AUTO=$((!(($RM_AUTO))))
+		;;
 	-b)
 		SEP_BLOCKS=$((!(($SEP_BLOCKS))))
 		;;
@@ -184,7 +189,7 @@ while (($# > 0)); do
 	-o)
 		shift
 		! [ -d "${1}" ] && usage 11 "${1} n'est pas un répertoire"
-		! [ -w "${1}" ] && usage 11 "${USER} n'a pas les droits en écriture dans ${1}"
+		! [ -w "${1}" ] && usage 11 "${USER} n'a pas les droits en écriture sur ${1}"
 		WD_ROOT="${1%/}/"
 		;;
 	-p)	
@@ -193,9 +198,6 @@ while (($# > 0)); do
 		;;
 	-q)
 		QUIET=$((!(($QUIET))))
-		;;
-	-a)
-		RM_AUTO=$((!(($RM_AUTO))))
 		;;
 	*)
 		if [ -e "$1" ] && [ -f "$1" ] && is_balisep "$1"; then
