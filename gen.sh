@@ -35,7 +35,6 @@ function is_balisep {
 	{ head -1 "$1" | sed 's/\r//g' | grep "$HEADER"; } > /dev/null
 	if [ $? -ne 0 ]; then
 		err "entête de fichier non valide, forme retenue:" 
-		# err "$(echo ${HEADER:1:-2} | sed 's/\\//g')"
 		err "$(echo ${HEADER:1:${#HEADER}-3} | sed 's/\\//g')"
 		return 1
 	fi
@@ -138,12 +137,10 @@ EOF
 
 	ary[2,"FILE"]="${WD}balisep_nb_tbtniv_balise.txt"
 	ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
-	cat > "${WD}stats.txt" <<EOF
-Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s).
-EOF
+	echo "Statistiques: ${TBTNIV_NR}, ${BEACON_NR} balise(s)." > "${WD}stats.txt"
 	info "  $(cat "${WD}stats.txt")"
+
 	for i in {1..2}; do
-	# for i in $(seq 1 $(( ${#ary[@]} / 2 )) ); do
 		sort ${ary[$i,"SORT"]} < "${DATA}" | 
 			awk -f pr.awk "TBTNIV_NR=${TBTNIV_NR}" \
 			"BEACON_NR=${BEACON_NR}" "SEP_LINES=${SEP_LINES}" \
