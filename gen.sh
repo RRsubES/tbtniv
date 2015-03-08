@@ -16,6 +16,7 @@ Paramètres:
 -h	    : affiche l'aide
 -n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
 -o DIR=./   : change le répertoire destination à DIR (rep courant par défaut).
+-f	    : copy par ftp sur le reseau dans le répertoire defini par defaut.
 -p PREFIX   : ajoute PREFIX au nom du répertoire (espaces remplacées par _).
 -q	    : mode silencieux.
 BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
@@ -28,6 +29,23 @@ e.g.: ./$(basename $0) -p "ibp rr" BALISEP.15mar -p "" BALISEP.15fev
 e.g.: ./$(basename $0) -o /tmp -a -b -d -q BALISEP.15mar
 EOF
 	exit $1
+}
+
+function ftp_copy {
+	# $1 is the file to copy
+	# 3 variables to define, FTP_USER, FTP_PW and FTP_DIR
+	local FTP_CONFIG
+	FTP_CONFIG=./ftp_config.txt
+	! [ -e "${FTP_CONFIG}" ] && err 10 "pas de config ftp disponible"
+	source "${FTP_CONFIG}"
+	ftp -n $FREE_ADR<<END_SCRIPT
+quote user ${FTP_USER}
+quote pass ${FTP_PW}
+cd ${FTP_DIR}
+put $1
+quit
+END_SCRIPT
+	[ $? -ne 0 ] && err 16 "impossible de copier $1 sur le reseau"
 }
 
 function is_balisep {
@@ -60,6 +78,7 @@ QUIET=0
 RM_WAIT=20
 RM_AUTO=0
 RM_EPOCH=$(( RM_WAIT + $(date +%s)))
+FTP_COPY=0
 
 INPUT=
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
@@ -120,6 +139,7 @@ RM_EPOCH="${RM_EPOCH}"
 RM_AUTO="${RM_AUTO}"
 BEACON_NR="${BEACON_NR}"
 TBTNIV_NR="${TBTNIV_NR}"
+FTP_COPY="${FTP_COPY}"
 # ARGUMENTS
 SEP_LINES="${SEP_LINES}"
 SEP_BLOCKS="${SEP_BLOCKS}"
@@ -151,6 +171,7 @@ EOF
 	if [ ${PRINT_WD} -ne 0 ]; then
 		echo "${WD}"
 	fi
+	[ ${FTP_COPY} -ne 0 ] && ftp_copy "${INPUT}"
 	[ ${RM_AUTO} -ne 0 ] && nohup bash -c "sleep ${RM_WAIT} && rm -Rf \"${WD}\"" &> /dev/null &
 	return 0
 }
@@ -188,6 +209,9 @@ while (($# > 0)); do
 		! [ -d "${1}" ] && usage 11 "${1} n'est pas un répertoire"
 		! [ -w "${1}" ] && usage 11 "${USER} n'a pas les droits en écriture sur ${1}"
 		WD_ROOT="${1%/}/"
+		;;
+	-f)
+		FTP_COPY=$((!(($FTP_COPY))))
 		;;
 	-p)	
 		shift
