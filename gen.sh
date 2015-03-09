@@ -32,20 +32,26 @@ EOF
 }
 
 function ftp_copy {
-	# $1 is the file to copy
-	# 3 variables to define, FTP_USER, FTP_PW and FTP_DIR
+	local ZIP_FILE
 	local FTP_CONFIG
-	FTP_CONFIG=./ftp_config.txt
+	ZIP_FILE="${WD_NAME}.zip"
+	# echo "ZIP_FILE ${ZIP_FILE}"
+	FTP_CONFIG=./free.cfg
+	zip -r "${ZIP_FILE}" "${WD}" > /dev/null 2>&1
+	[ $? -ne 0 ] && err 10 "problème à la création du fichier zip"
+	# 4 variables to define, FTP_USER, FTP_PW, FTP_ADR and FTP_DIR
 	! [ -e "${FTP_CONFIG}" ] && err 10 "pas de config ftp disponible"
 	source "${FTP_CONFIG}"
-	ftp -n $FREE_ADR<<END_SCRIPT
+	ftp -in ${FTP_ADR}<<EOF
 quote user ${FTP_USER}
 quote pass ${FTP_PW}
-cd ${FTP_DIR}
-put $1
+cd "${FTP_DIR}"
+binary
+put "${ZIP_FILE}"
 quit
-END_SCRIPT
-	[ $? -ne 0 ] && err 16 "impossible de copier $1 sur le reseau"
+EOF
+	[ $? -ne 0 ] && err 16 "impossible de copier $1 par ftp"
+	rm -f "${ZIP_FILE}"
 }
 
 function is_balisep {
@@ -99,7 +105,8 @@ function process_balisep {
 	info "* ${INPUT}: date CA ${DATE_CA}" 
 
 	# create Working Directory
-	WD="${WD_ROOT}${WD_PREFIX:+${WD_PREFIX}_}${DATE_GEN}_CA${DATE_CA}/"
+	WD_NAME="${WD_PREFIX:+${WD_PREFIX}_}${DATE_GEN}_CA${DATE_CA}"
+	WD="${WD_ROOT}${WD_NAME}/"
 	if [ -e "${WD}" ]; then
 		err "repertoire ${WD} déjà utilisé, abandon."
 		return 10
@@ -127,7 +134,7 @@ function process_balisep {
 	
 	TBTNIV_NR=$(wc -l < "${TBTNIV}")
 	BEACON_NR=$(wc -l < "${DATA}")
-	# store information in .do_not_modify.txt
+	# store information in ..do_not_modify.txt
 	# duplicate/rename source file in ${WD}
 	{ cp "${INPUT}" "${WD}BALISEP"; } > /dev/null
 	# store variables
@@ -146,6 +153,7 @@ SEP_BLOCKS="${SEP_BLOCKS}"
 MAX_BEACONS_PER_LINE="${MAX_BEACONS_PER_LINE}"
 WD_PREFIX="${WD_PREFIX}"
 WD_ROOT="${WD_ROOT}"
+WD_NAME="${WD_NAME}"
 PRINT_WD="${PRINT_WD}"
 QUIET="${QUIET}"
 EOF
