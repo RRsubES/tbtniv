@@ -179,7 +179,7 @@ EOF
 	if [ ${PRINT_WD} -ne 0 ]; then
 		echo "${WD}"
 	fi
-	[ ${FTP_COPY} -ne 0 ] && ftp_copy "${INPUT}"
+	[ ${FTP_COPY} -ne 0 ] && ftp_copy
 	[ ${RM_AUTO} -ne 0 ] && nohup bash -c "sleep ${RM_WAIT} && rm -Rf \"${WD}\"" &> /dev/null &
 	return 0
 }
