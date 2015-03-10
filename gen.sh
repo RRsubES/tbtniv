@@ -32,26 +32,25 @@ EOF
 }
 
 function ftp_copy {
-	local ZIP_FILE
+	local TAR_FILE
 	local FTP_CONFIG
-	ZIP_FILE="${WD_NAME}.zip"
-	# echo "ZIP_FILE ${ZIP_FILE}"
-	FTP_CONFIG=./free.cfg
-	zip -r "${ZIP_FILE}" "${WD}" > /dev/null 2>&1
-	[ $? -ne 0 ] && err 10 "problème à la création du fichier zip"
+	TAR_FILE="${WD_NAME}.tar.gz"
+	FTP_CONFIG=./myrcella.cfg
 	# 4 variables to define, FTP_USER, FTP_PW, FTP_ADR and FTP_DIR
 	! [ -e "${FTP_CONFIG}" ] && err 10 "pas de config ftp disponible"
+	tar cvf "${TAR_FILE}" "${WD}" > /dev/null 2>&1
+	[ $? -ne 0 ] && err 10 "problème à la création du fichier tar.gz"
 	source "${FTP_CONFIG}"
 	ftp -in ${FTP_ADR}<<EOF
 quote user ${FTP_USER}
 quote pass ${FTP_PW}
 cd "${FTP_DIR}"
 binary
-put "${ZIP_FILE}"
+put "${TAR_FILE}"
 quit
 EOF
 	[ $? -ne 0 ] && err 16 "impossible de copier $1 par ftp"
-	rm -f "${ZIP_FILE}"
+	rm -f "${TAR_FILE}"
 }
 
 function is_balisep {
