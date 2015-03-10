@@ -32,13 +32,13 @@ EOF
 }
 
 function ftp_copy {
-	local TAR_FILE
+	local AR_FILE
 	local FTP_CONFIG
-	TAR_FILE="${WD_NAME}.tar.gz"
+	AR_FILE="${WD_NAME}.tar.gz"
 	FTP_CONFIG=./myrcella.cfg
 	# 4 variables to define, FTP_USER, FTP_PW, FTP_ADR and FTP_DIR
 	! [ -e "${FTP_CONFIG}" ] && err 10 "pas de config ftp disponible"
-	tar cvf "${TAR_FILE}" "${WD}" > /dev/null 2>&1
+	tar cvf "${AR_FILE}" "${WD}" > /dev/null 2>&1
 	[ $? -ne 0 ] && err 10 "problème à la création du fichier tar.gz"
 	source "${FTP_CONFIG}"
 	ftp -in ${FTP_ADR}<<EOF
@@ -46,11 +46,11 @@ quote user ${FTP_USER}
 quote pass ${FTP_PW}
 cd "${FTP_DIR}"
 binary
-put "${TAR_FILE}"
+put "${AR_FILE}"
 quit
 EOF
 	[ $? -ne 0 ] && err 16 "impossible de copier $1 par ftp"
-	rm -f "${TAR_FILE}"
+	rm -f "${AR_FILE}"
 }
 
 function is_balisep {
@@ -96,7 +96,6 @@ function process_balisep {
 	# much easier to complete filenames...
 	MAXLEN=$((6 * MAX_BEACONS_PER_LINE))
 	# echo date is DD-MM-YY, changing it to YYYY-MM-DD
-	# DATE_CA=$(head -1 "${INPUT}" | awk '{print $7}' | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 	DATE_CA=$(head -1 "${INPUT}" | tr -s ' ' | cut -d' ' -f7 | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
 	BEACON_NR=
 	TBTNIV_NR=
