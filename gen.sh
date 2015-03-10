@@ -163,7 +163,7 @@ EOF
 
 	ary[2,"FILE"]="${WD}balisep_nb_tbtniv_balise.txt"
 	ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
-	echo "Statistiques: ${TBTNIV_NR}, ${BEACON_NR} balise(s)." > "${WD}stats.txt"
+	echo "Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s)." > "${WD}stats.txt"
 	info "  $(cat "${WD}stats.txt")"
 
 	for i in {1..2}; do
