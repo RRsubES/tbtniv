@@ -37,13 +37,13 @@ function ftp_copy {
 	local LWD
 	LWD="$(pwd)"
 	LWD="${LWD%/}/"
-	AR_FILE="${GEN_DIR}.tar.gz"
+	AR_FILE="${GEN_DIR}.tar.bz2"
 	FTP_CFG=./bleiz.cfg
-	# FTP_CFG=./free.cfg
+# FTP_CFG=./free.cfg
 	# 4 variables to define, FTP_USER, FTP_PW, FTP_ADR and FTP_DIR
 	! [ -e "${FTP_CFG}" ] && err 10 "pas de config ftp disponible"
 	source "${FTP_CFG}"
-	( cd "${DST_ROOT}"; tar czvf "${LWD}${AR_FILE}" "${GEN_DIR}" ;) > /dev/null 2>&1
+	( cd "${DST_ROOT}"; tar cjvf "${LWD}${AR_FILE}" "${GEN_DIR}" ;) > /dev/null 2>&1
 	[ $? -ne 0 ] && err 10 "problème à la création du fichier ${AR_FILE}"
 	ftp -in ${FTP_ADR}<<EOF
 quote user ${FTP_USER}
