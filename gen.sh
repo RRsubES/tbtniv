@@ -34,13 +34,18 @@ EOF
 function ftp_copy {
 	local AR_FILE
 	local FTP_CONFIG
+	local LWD
+	LWD="$(pwd)"
+	LWD="${LWD%/}/"
 	AR_FILE="${WD_NAME}.tar.gz"
-	FTP_CONFIG=./myrcella.cfg
+	echo "LWD=${LWD}"
+	# FTP_CONFIG=./myrcella.cfg
+	FTP_CONFIG=./free.cfg
 	# 4 variables to define, FTP_USER, FTP_PW, FTP_ADR and FTP_DIR
 	! [ -e "${FTP_CONFIG}" ] && err 10 "pas de config ftp disponible"
-	tar cvf "${AR_FILE}" "${WD}" > /dev/null 2>&1
-	[ $? -ne 0 ] && err 10 "problème à la création du fichier tar.gz"
 	source "${FTP_CONFIG}"
+	( cd "${WD_ROOT}"; tar czvf "${LWD}${AR_FILE}" "${WD_NAME}" ;) > /dev/null 2>&1
+	[ $? -ne 0 ] && err 10 "problème à la création du fichier ${AR_FILE}"
 	ftp -in ${FTP_ADR}<<EOF
 quote user ${FTP_USER}
 quote pass ${FTP_PW}
@@ -49,16 +54,15 @@ binary
 put "${AR_FILE}"
 quit
 EOF
-	[ $? -ne 0 ] && err 16 "impossible de copier $1 par ftp"
-	rm -f "${AR_FILE}"
+	[ $? -ne 0 ] && err 16 "impossible de copier ${AR_FILE} par ftp"
+	rm -f "${LWD}${AR_FILE}"
 }
 
 function is_balisep {
 	local HEADER='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
 	{ head -1 "$1" | sed 's/\r//g' | grep "$HEADER"; } > /dev/null
 	if [ $? -ne 0 ]; then
-		err "entête de fichier non valide, forme retenue:" 
-		err "$(echo ${HEADER:1:${#HEADER}-3} | sed 's/\\//g')"
+		err "entête de fichier non valide." 
 		return 1
 	fi
 	return 0
@@ -227,11 +231,14 @@ while (($# > 0)); do
 		QUIET=$((!(($QUIET))))
 		;;
 	*)
-		if [ -e "$1" ] && [ -f "$1" ] && is_balisep "$1"; then
-			process_balisep "$1"
-		else
-			usage 11 "champ $1 de type inconnu"
-		fi
+		! [ -e "$1" ] && usage 11 "$1 n'est pas un fichier existant"
+		! [ -f "$1" ] && usage 11 "$1 n'est pas un fichier régulier"
+		! is_balisep "$1" && usage 11 "$1 n'est pas un fichier balisep"
+		# if [ -e "$1" ] && [ -f "$1" ] && is_balisep "$1"; then
+		process_balisep "$1"
+		# else
+		#	usage 11 "champ $1 de type inconnu"
+#fi
 		;;
 	esac
 	shift
