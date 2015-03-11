@@ -14,7 +14,7 @@ function debug {
 
 function usage {
 	cat >&2 <<EOF
-usage: ./$(basename $0) [-d DIR=./] [-t EPOCH=now]
+usage: ./$(basename $0) [-d DIR=./] [-t EPOCH=now] [-f]
 Paramètres:
 -d DIR    : specifie le repertoire à nettoyer.
 -t EPOCH  : précise l'époque en seconde à compter de 01/01/1970,
@@ -25,10 +25,10 @@ Paramètres:
 	    	$ date --date="12-feb-12" +%s
 	    et l'inverse:
 		$ date --date='@2147483647'
--f        : passe outre la vérif de conservation mais conserve celle
-	    d'antiériorité. UTILISER AVEC PRECAUTION.
+-f        : passe outre la vérif d'antériorité. UTILISER AVEC PRECAUTION.
 
 e.g.: ./$(basename $0) -d /tmp -t 1425422800
+e.g.: ./$(basename $0) -f
 EOF
 }
 
