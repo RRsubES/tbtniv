@@ -31,30 +31,27 @@ EOF
 	exit $1
 }
 
-function ftp_copy {
-	local AR_FILE
-	local FTP_CFG
+function gz2ftp {
+	# $1 is the ftp config file
+	local GZ_FILE
 	local LWD
-	LWD="$(pwd)"
-	LWD="${LWD%/}/"
-	AR_FILE="${GEN_DIR}.tar.bz2"
-	FTP_CFG=./bleiz.cfg
-# FTP_CFG=./free.cfg
+	LWD="$(pwd)"; LWD="${LWD%/}/"
+	GZ_FILE="${GEN_DIR}.tar.gz"
 	# 4 variables to define, FTP_USER, FTP_PW, FTP_ADR and FTP_DIR
-	! [ -e "${FTP_CFG}" ] && err 10 "pas de config ftp disponible"
-	source "${FTP_CFG}"
-	( cd "${DST_ROOT}"; tar -czvf "${LWD}${AR_FILE}" "${GEN_DIR}" ;) > /dev/null 2>&1
-	[ $? -ne 0 ] && err 10 "problème à la création du fichier ${AR_FILE}"
+	! [ -e "${1}" ] && err 10 "pas de config ftp disponible, $1"
+	source "${1}"
+	( cd "${DST_ROOT}"; tar -czvf "${LWD}${GZ_FILE}" "${GEN_DIR}" ;) > /dev/null 2>&1
+	[ $? -ne 0 ] && err 10 "problème à la création du fichier ${GZ_FILE}"
 	ftp -in ${FTP_ADR}<<EOF
 quote user ${FTP_USER}
 quote pass ${FTP_PW}
 cd "${FTP_DIR}"
 binary
-put "${AR_FILE}"
+put "${GZ_FILE}"
 quit
 EOF
-	[ $? -ne 0 ] && err 16 "impossible de copier ${AR_FILE} par ftp"
-	rm -f "${LWD}${AR_FILE}"
+	[ $? -ne 0 ] && err 16 "impossible de copier ${GZ_FILE} par ftp"
+	rm -f "${LWD}${GZ_FILE}"
 }
 
 function is_balisep {
@@ -84,7 +81,7 @@ PREFIX=
 DST_ROOT=./
 PRINT_DST=0
 QUIET=0
-RM_WAIT=20
+RM_WAIT=30
 RM_AUTO=0
 RM_EPOCH=$(( RM_WAIT + $(date +%s)))
 FTP_COPY=0
@@ -181,7 +178,8 @@ EOF
 	if [ ${PRINT_DST} -ne 0 ]; then
 		echo "${DST_DIR}"
 	fi
-	[ ${FTP_COPY} -ne 0 ] && ftp_copy
+	[ ${FTP_COPY} -ne 0 ] && gz2ftp ./free.cfg
+	# [ ${FTP_COPY} -ne 0 ] && gz2ftp ./bleiz.cfg
 	[ ${RM_AUTO} -ne 0 ] && nohup bash -c "sleep ${RM_WAIT} && rm -Rf \"${DST_DIR}\"" &> /dev/null &
 	return 0
 }
