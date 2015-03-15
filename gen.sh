@@ -40,7 +40,6 @@ function gz2ftp {
 	# 4 variables to define, FTP_USER, FTP_PW, FTP_ADR and FTP_DIR
 	! [ -e "${1}" ] && err 10 "pas de config ftp disponible, $1"
 	source "${1}"
-# ( cd "${DST_ROOT}"; tar -czvf "${LWD}${GZ_FILE}" "${GEN_DIR}" ;) > /dev/null 2>&1
 	{ tar -czvf "${LWD}${GZ_FILE}" -C "${DST_ROOT}" "${GEN_DIR}" ;} > /dev/null 2>&1
 	[ $? -ne 0 ] && err 10 "problème à la création du fichier ${GZ_FILE}"
 	ftp -in ${FTP_ADR}<<EOF
@@ -88,17 +87,18 @@ RM_EPOCH=$(( RM_WAIT + $(date +%s)))
 FTP_COPY=0
 
 INFILE=
+# better to keep DATE_GEN once for all given files,
+# much easier to complete filenames afterwards.
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
 
 function process_balisep {
 	# $1 = BALISEP file
 	# Set instance values
 	INFILE="$1"
-	# better to keep DATE_GEN once for the whole instance,
-	# much easier to complete filenames...
 	MAXLEN=$((6 * MAX_BEACONS_PER_LINE))
-	# echo date is DD-MM-YY, changing it to YYYY-MM-DD
+	# date is DD-MM-YY, changing it to YYYY-MM-DD
 	DATE_CA=$(head -1 "${INFILE}" | tr -s ' ' | cut -d' ' -f7 | sed -n -e "s_\(..\)-\(..\)-\(..\)_20\3-\2-\1_p")
+	! [[ ${DATE_CA} =~ ^20[0-9]{2}-(0[1-9]|10|11|12)-([0-2][1-9]|10|20|30|31)$ ]] && err "DATE_CA non valide, ${DATE_CA}" && return 10
 	BEACON_NR=
 	TBTNIV_NR=
 
@@ -109,14 +109,13 @@ function process_balisep {
 	DST_DIR="${DST_ROOT}${GEN_DIR}/"
 	if [ -e "${DST_DIR}" ]; then
 		err "repertoire ${DST_DIR} déjà utilisé, abandon."
-		return 10
+		return 11
 	fi
 	{ mkdir -p "${DST_DIR}"; } > /dev/null
 	if [ $? -ne 0 ]; then
 		err "impossible de créer le repertoire ${DST_DIR}"
-		return 11
+		return 12
 	fi
-	# does not work in my Cygwin, bash version probly outdated
 	info "  Résultats disponibles dans [${DST_DIR}]"
 
 	# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCCURRENCES
@@ -127,14 +126,13 @@ function process_balisep {
 	TBTNIV="${DST_DIR}tbtniv.txt"
 
 	# extract data from balisep file
-	#sed 's/\r//g' "${INFILE}" |
 	awk -f build.tbtniv.awk "${INFILE}" | tee "${DATA}" |
 		sort -k2,2n -k3,3 | awk '{ print $3 }' | uniq -c |
 		tee "${TBTNIV_STATS}" | awk '{ print $2 }' > "${TBTNIV}"
 	
 	TBTNIV_NR=$(wc -l < "${TBTNIV}")
 	BEACON_NR=$(wc -l < "${DATA}")
-	# store information in ..do_not_modify.txt
+	# store information in .do_not_modify.txt
 	# duplicate/rename source file in ${DST_DIR}
 	{ cp "${INFILE}" "${DST_DIR}BALISEP"; } > /dev/null
 	# store variables
@@ -179,15 +177,15 @@ EOF
 	if [ ${PRINT_DST} -ne 0 ]; then
 		echo "${DST_DIR}"
 	fi
-	[ ${FTP_COPY} -ne 0 ] && gz2ftp ./free.cfg
+	[ ${FTP_COPY} -ne 0 ] && gz2ftp ./bleiz.cfg
 	# [ ${FTP_COPY} -ne 0 ] && gz2ftp ./free.cfg
 	[ ${RM_AUTO} -ne 0 ] && nohup bash -c "sleep ${RM_WAIT} && rm -Rf \"${DST_DIR}\"" &> /dev/null &
 	return 0
 }
 
-#if [ -p /dev/stdin ]; then
-#	usage 1 "pipe indisponible dans cette version"
-#fi
+if [ -p /dev/stdin ]; then
+	usage 1 "pipe indisponible dans cette version"
+fi
 
 while (($# > 0)); do
 	case "$1" in
