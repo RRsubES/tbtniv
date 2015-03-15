@@ -18,8 +18,8 @@ usage: ./$(basename $0) [-d DIR=./] [-t EPOCH=now] [-f]
 Paramètres:
 -d DIR    : specifie le repertoire à nettoyer.
 -t EPOCH  : précise l'époque en seconde à compter de 01/01/1970,
-	    à partir du duquel ne plus effacer les répertoires
-            anciennement créées.
+	    à partir de laquelle ne plus effacer les répertoires
+            anciennement créés.
             La valeur courante peut s'obtenir avec la commande 'date +%s'
 	    conversion d'une date en epoch:
 	    	$ date --date="12-feb-12" +%s
@@ -91,7 +91,7 @@ for f in `find "${DIR}" -name ".do_not_modify.txt"`; do
 	if ! check_dir "${d}"; then
 		continue
 	fi
-	debug ">> ${d} contient bien les bons fichiers, sans sous-repertoires"
+	debug ">> ${d} contient bien les bons fichiers, sans sous-repertoire"
 	if ! [[ $d =~ ^(./|/)?(.*/)*(.*_)?[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}h[0-9]{2}_CA[0-9]{4}-[0-9]{2}-[0-9]{2}/$ ]]; then
 		continue
 	fi
