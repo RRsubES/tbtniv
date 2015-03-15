@@ -40,7 +40,8 @@ function gz2ftp {
 	# 4 variables to define, FTP_USER, FTP_PW, FTP_ADR and FTP_DIR
 	! [ -e "${1}" ] && err 10 "pas de config ftp disponible, $1"
 	source "${1}"
-	( cd "${DST_ROOT}"; tar -czvf "${LWD}${GZ_FILE}" "${GEN_DIR}" ;) > /dev/null 2>&1
+# ( cd "${DST_ROOT}"; tar -czvf "${LWD}${GZ_FILE}" "${GEN_DIR}" ;) > /dev/null 2>&1
+	{ tar -czvf "${LWD}${GZ_FILE}" -C "${DST_ROOT}" "${GEN_DIR}" ;} > /dev/null 2>&1
 	[ $? -ne 0 ] && err 10 "problème à la création du fichier ${GZ_FILE}"
 	ftp -in ${FTP_ADR}<<EOF
 quote user ${FTP_USER}
@@ -179,7 +180,7 @@ EOF
 		echo "${DST_DIR}"
 	fi
 	[ ${FTP_COPY} -ne 0 ] && gz2ftp ./free.cfg
-	# [ ${FTP_COPY} -ne 0 ] && gz2ftp ./bleiz.cfg
+	# [ ${FTP_COPY} -ne 0 ] && gz2ftp ./free.cfg
 	[ ${RM_AUTO} -ne 0 ] && nohup bash -c "sleep ${RM_WAIT} && rm -Rf \"${DST_DIR}\"" &> /dev/null &
 	return 0
 }
