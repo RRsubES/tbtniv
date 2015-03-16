@@ -87,6 +87,7 @@ RM_EPOCH=$(( RM_WAIT + $(date +%s)))
 FTP_COPY=0
 
 INFILE=
+FILE_NR=0
 # better to keep DATE_GEN once for all given files,
 # much easier to complete filenames afterwards.
 DATE_GEN=$(date '+%Y-%0m-%0d_%0kh%0M')
@@ -230,8 +231,10 @@ while (($# > 0)); do
 		! [ -f "$1" ] && usage 11 "$1 n'est pas un fichier régulier"
 		! is_balisep "$1" && usage 11 "$1 n'est pas un fichier balisep"
 		process_balisep "$1"
+		FILE_NR=$((FILE_NR + 1))
 		;;
 	esac
 	shift
 done
 
+[ ${FILE_NR} -eq 0 ] && usage 0
