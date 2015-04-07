@@ -1,10 +1,9 @@
 #!/bin/bash
 
 function usage {
-	# $1 contains the exit error code
-	# $2 contains the error msg to display if needed
-	if [ ! "x$2" == "x" ]; then
-		err "$2"
+	# $1 contains the error msg to display if needed
+	if [ ! "x$1" == "x" ]; then
+		err "$1"
 	fi
 	cat >&2 <<EOF
 usage: ./$(basename $0) [-a] [-b] [-l] [-d] [-h] [-n NB] [-o DIR] [-p PREFIX] [-q] BALISEP_1 BALISEP_2...
@@ -28,6 +27,12 @@ e.g.: ./$(basename $0) -b -l -n 10 BALISEP.15fev -n 15 -p ibp BALISEP.15mar
 e.g.: ./$(basename $0) -p "ibp rr" BALISEP.15mar -p "" BALISEP.15fev
 e.g.: ./$(basename $0) -o /tmp -a -b -d -q BALISEP.15mar
 EOF
+}
+
+function die {
+	# $1 is the error code
+	# $2 contains the error msg
+	usage "$2"
 	exit $1
 }
 
@@ -185,7 +190,7 @@ EOF
 }
 
 if [ -p /dev/stdin ]; then
-	usage 1 "pipe indisponible dans cette version"
+	die 1 "pipe indisponible dans cette version"
 fi
 
 while (($# > 0)); do
@@ -200,20 +205,20 @@ while (($# > 0)); do
 		PRINT_DST=$((!(($PRINT_DST))))
 		;;
 	-h)
-		usage 1
+		die 1
 		;;
 	-l)
 		SEP_LINES=$((!(($SEP_LINES))))
 		;;
 	-n)
 		shift
-		! [[ $1 =~ ^[0-9]+$ ]] && usage 10 "le champ -n doit être suivi d'un nombre"
+		! [[ $1 =~ ^[0-9]+$ ]] && die 10 "le champ -n doit être suivi d'un nombre"
 		MAX_BEACONS_PER_LINE=$(($1>0?$1:1))
 		;;
 	-o)
 		shift
-		! [ -d "${1}" ] && usage 11 "${1} n'est pas un répertoire"
-		! [ -w "${1}" ] && usage 11 "${USER} n'a pas les droits en écriture sur ${1}"
+		! [ -d "${1}" ] && die 11 "${1} n'est pas un répertoire"
+		! [ -w "${1}" ] && die 11 "${USER} n'a pas les droits en écriture sur ${1}"
 		DST_ROOT="${1%/}/"
 		;;
 	-f)
@@ -227,9 +232,9 @@ while (($# > 0)); do
 		QUIET=$((!(($QUIET))))
 		;;
 	*)
-		! [ -e "$1" ] && usage 11 "$1 n'est pas un fichier existant"
-		! [ -f "$1" ] && usage 11 "$1 n'est pas un fichier régulier"
-		! is_balisep "$1" && usage 11 "$1 n'est pas un fichier balisep"
+		! [ -e "$1" ] && die 11 "$1 n'est pas un fichier existant"
+		! [ -f "$1" ] && die 11 "$1 n'est pas un fichier régulier"
+		! is_balisep "$1" && die 11 "$1 n'est pas un fichier balisep"
 		process_balisep "$1"
 		FILE_NR=$((FILE_NR + 1))
 		;;
@@ -237,4 +242,4 @@ while (($# > 0)); do
 	shift
 done
 
-[ ${FILE_NR} -eq 0 ] && usage 0
+[ ${FILE_NR} -eq 0 ] && die 1 "aucun nom de fichier detecté"
