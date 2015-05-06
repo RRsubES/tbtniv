@@ -15,17 +15,17 @@ function debug {
 function usage {
 	cat >&2 <<EOF
 usage: ./$(basename $0) [-d DIR=./] [-t EPOCH=now] [-f]
-Paramètres:
--d DIR    : specifie le repertoire à nettoyer.
--t EPOCH  : précise l'époque en seconde à compter de 01/01/1970,
-	    à partir de laquelle ne plus effacer les répertoires
-            anciennement créés.
+Parametres:
+-d DIR    : specifie le repertoire a nettoyer.
+-t EPOCH  : precise l'epoque en seconde a compter de 01/01/1970,
+	    a partir de laquelle ne plus effacer les repertoires
+            anciennement crees.
             La valeur courante peut s'obtenir avec la commande 'date +%s'
 	    conversion d'une date en epoch:
 	    	$ date --date="12-feb-12" +%s
 	    et l'inverse:
 		$ date --date='@2147483647'
--f        : passe outre la vérif d'antériorité. UTILISER AVEC PRECAUTION.
+-f        : passe outre la verif d'anteriorite. UTILISER AVEC PRECAUTION.
 
 e.g.: ./$(basename $0) -d /tmp -t 1425422800
 e.g.: ./$(basename $0) -f
@@ -101,9 +101,9 @@ for f in `find "${DIR}" -name ".do_not_modify.txt"`; do
 	debug "RM_AUTO=${RM_AUTO}"
 	if [ ${FORCE} -ne 0 ] || [ ${RM_EPOCH} -lt ${EPOCH_NOW} ]; then
 		# debug "rm -Rf \"${d}\""
-		echo "\"${d}\" effacé" >&2
+		echo "\"${d}\" efface" >&2
 		rm -Rf "${d}"
 	else
-		debug "${d} conservé"
+		debug "${d} conserve"
 	fi
 done

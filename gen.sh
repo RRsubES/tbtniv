@@ -63,7 +63,7 @@ function is_balisep {
 	local HEADER='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
 	{ head -1 "$1" | sed 's/\r//g' | grep "$HEADER"; } > /dev/null
 	if [ $? -ne 0 ]; then
-		err "$1 a une entête de fichier non valide." 
+		err "$1 a une entete de fichier non valide." 
 		return 1
 	fi
 	return 0
@@ -212,7 +212,7 @@ while (($# > 0)); do
 		;;
 	-n)
 		shift
-		! [[ $1 =~ ^[0-9]+$ ]] && die 10 "le champ -n doit être suivi d'un nombre"
+		! [[ $1 =~ ^[0-9]+$ ]] && die 10 "le champ -n doit etre suivi d'un nombre"
 		MAX_BEACONS_PER_LINE=$(($1>0?$1:1))
 		;;
 	-o)

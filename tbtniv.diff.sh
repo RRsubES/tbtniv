@@ -3,15 +3,18 @@
 #./DIR1 et ./DIR2 are created with gen.sh.
 
 function unzip_if {
+	declare -r DST=/tmp/
 	# $1 is a tar.gz or a dir
 	file "$1" | grep "gzip" > /dev/null 2>&1
 	if [ $? -ne 0 ]; then
 		echo "$1"
 		return
 	fi
-	tar -xvf "$1" > /dev/null
-	sync
-	echo $(tar -tzf "$1" | head -1)
+	#tar -xvf "$1" > /dev/null
+	#sync
+	#echo $(tar -tzf "$1" | head -1)
+	tar -xvf "$1" -C "${DST}" > /dev/null
+	echo "${DST}$(tar -tzf "$1" | head -1)"
 }
 
 function check_gen_dir {
@@ -26,7 +29,7 @@ function check_gen_dir {
 
 function check_file {
 	if [ ! -e "$1" ] || [ ! -f "$1" ] ; then
-		echo "Fichier $1 non trouvé" >&2
+		echo "Fichier $1 non trouve" >&2
 		exit 2
 	fi
 }
@@ -34,7 +37,8 @@ function check_file {
 if [ $# -ne 2 ] || [ "$1" == "-h" ]; then
 	cat >&2 <<EOF
 usage: ./$(basename $0) VIEUX_REPERTOIRE NOUVEAU_REPERTOIRE
-e.g.: ./$(basename $0) REPERTOIRE_DATE_CA_N REPERTOIRE_DATE_CA_N+1
+   ou  ./$(basename $0) VIEUX_TAR_GZ NOUVEAU_TAR_GZ
+e.g.:  ./$(basename $0) DATE_CA_N DATE_CA_N+1
 EOF
 	exit 1
 fi
@@ -46,9 +50,9 @@ for i in $(seq 1 2); do
 	check_gen_dir "${DIR}"
 	source "${DIR}/.do_not_modify.txt"
 	DB[$i,"DIR"]="${DIR}"
-echo "DIR=${DIR}, 1=${1%/}"
+	#echo "DIR=${DIR}, 1=${1%/}"
 	DB[$i,"DEL"]=$(test "$DIR" != "${1%/}"; echo $?)
-	DB[$i,"CA"]="${DATE_CA?\$DATE_CA indéfinie, repertoire non valide}"
+	DB[$i,"CA"]="${DATE_CA?\$DATE_CA indefinie, repertoire non valide}"
 	DB[$i,"FILE"]="${DIR}/tbtniv.txt"
 	shift
 done
@@ -70,7 +74,7 @@ diff -u0 "${DB[1,"FILE"]}" "${DB[2,"FILE"]}" |
 }
 
 END {
-	printf("%39s%2s%-39s\n", sprintf("Créés(%d)", add_nr), "", sprintf("Supprimés(%d)", del_nr));
+	printf("%39s%2s%-39s\n", sprintf("Crees(%d)", add_nr), "", sprintf("Supprimes(%d)", del_nr));
 	for(i=0; i < (del_nr > add_nr ? del_nr : add_nr); i++)
 		printf("%39s%2s%-39s\n", add[i], "", del[i]);
 }' >> "${DST}"
@@ -81,7 +85,7 @@ for i in $(seq 1 2); do
 	fi
 done
 
-echo "Le résultat se trouve dans ${DST}"
+echo "Le resultat se trouve dans ${DST}"
 # it is possible to convert from UTF8 to latin1 (windows)
 # use iconv -l to get the list of available charset
 # iconv -f UTF-8 -t latin1 INPUT_FILE > OUTPUT_FILE
