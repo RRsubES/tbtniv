@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# link/drag files in current directory
+# drag [FILES]
+
+for i; do
+	base=`basename "$i"`
+	[ -e "$base" ] && rm -i "./$base"
+
+	if [ -e "$base" ]; then
+		echo "cannot drag, if $base still exists"
+	else
+		ln -s "$i" "$PWD"
+	fi
+done
+

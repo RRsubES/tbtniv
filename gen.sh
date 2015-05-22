@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 
 function usage {
 	# $1 contains the error msg to display if needed
@@ -7,20 +7,20 @@ function usage {
 	fi
 	cat >&2 <<EOF
 usage: ./$(basename $0) [-a] [-b] [-l] [-d] [-h] [-n NB] [-o DIR] [-p PREFIX] [-q] BALISEP_1 BALISEP_2...
-Parametres:
--a	    : efface le repertoire ${RM_WAIT} secondes apres sa generation.
--b	    : separe chaque bloc de tbtniv par une interligne.
--l    	    : separe chaque ligne par une interligne.
--d	    : affiche le nom des repertoires crees sur l'entree standard.
+Paramètres:
+-a	    : efface le répertoire ${RM_WAIT} secondes après sa génération.
+-b	    : sépare chaque bloc de tbtniv par une interligne.
+-l    	    : sépare chaque ligne par une interligne.
+-d	    : affiche le nom des répertoires créés sur l'entrée standard.
 -h	    : affiche l'aide
--n NB=${MAX_BEACONS_PER_LINE}     : specifie le nombre max de balises affichees par ligne.
--o DIR=./   : change le repertoire destination pour DIR (rep courant par defaut).
--f	    : copie par ftp sur le reseau dans le repertoire defini par defaut.
--p PREFIX   : ajoute PREFIX au nom du repertoire (espaces remplacees par _).
+-n NB=${MAX_BEACONS_PER_LINE}     : spécifie le nombre max de balises affichées par ligne.
+-o DIR=./   : change le répertoire destination à DIR (rep courant par défaut).
+-f	    : copie par ftp sur le reseau dans le répertoire defini par defaut.
+-p PREFIX   : ajoute PREFIX au nom du répertoire (espaces remplacées par _).
 -q	    : mode silencieux.
-BALISEP_N   : specifie le nom du ou des fichier(s) pour traitement.
+BALISEP_N   : spécifie le nom du ou des fichier(s) à traiter.
 
-Les fichiers seront generes dans le chemin precise par -o, dans un repertoire
+Les fichiers seront générés dans le chemin précisé par -o, dans un répertoire
 	au nom de: {PREFIX_}{DATE_HEURE_DU_JOUR}_CA{DATE_CA}.
 
 e.g.: ./$(basename $0) -b -l -n 10 BALISEP.15fev -n 15 -p ibp BALISEP.15mar 
@@ -46,7 +46,7 @@ function gz2ftp {
 	! [ -e "${1}" ] && err 10 "pas de config ftp disponible, $1"
 	source "${1}"
 	{ tar -czvf "${LWD}${GZ_FILE}" -C "${DST_ROOT}" "${GEN_DIR}" ;} > /dev/null 2>&1
-	[ $? -ne 0 ] && err 10 "probleme pour creer le fichier ${GZ_FILE}"
+	[ $? -ne 0 ] && err 10 "problème à la création du fichier ${GZ_FILE}"
 	ftp -in ${FTP_ADR}<<EOF
 quote user ${FTP_USER}
 quote pass ${FTP_PW}
@@ -63,7 +63,7 @@ function is_balisep {
 	local HEADER='^FORMAT : STIP [ ]*VERSION CA : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*LIVRAISON : [ 0-9]\{1,2\}-[ 0-9]\{1,2\}-[0-9]\{2\} [ ]*PART : BALISEP[ ]*$'
 	{ head -1 "$1" | sed 's/\r//g' | grep "$HEADER"; } > /dev/null
 	if [ $? -ne 0 ]; then
-		err "$1 a une entete de fichier non valide." 
+		err "$1 a une entête de fichier non valide." 
 		return 1
 	fi
 	return 0
@@ -114,15 +114,15 @@ function process_balisep {
 	GEN_DIR="${PREFIX:+${PREFIX}_}${DATE_GEN}_CA${DATE_CA}"
 	DST_DIR="${DST_ROOT}${GEN_DIR}/"
 	if [ -e "${DST_DIR}" ]; then
-		err "repertoire ${DST_DIR} deja utilise, abandon."
+		err "repertoire ${DST_DIR} déjà utilisé, abandon."
 		return 11
 	fi
 	{ mkdir -p "${DST_DIR}"; } > /dev/null
 	if [ $? -ne 0 ]; then
-		err "impossible de creer le repertoire ${DST_DIR}"
+		err "impossible de créer le repertoire ${DST_DIR}"
 		return 12
 	fi
-	info "  Resultats disponibles dans [${DST_DIR}]"
+	info "  Résultats disponibles dans [${DST_DIR}]"
 
 	# >> BEACON TBTNIV_LEN TBTNIV TBTNIV_OCCURRENCES
 	DATA="${DST_DIR}.data.txt"
@@ -169,7 +169,7 @@ EOF
 
 	ary[2,"FILE"]="${DST_DIR}balisep_nb_tbtniv_balise.txt"
 	ary[2,"SORT"]="-k4,4n -k2,2n -k3,3 -k1,1"
-	echo "Statistiques: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s)." > "${DST_DIR}stats.txt"
+	echo "Statistiques pour la date du ${DATE_CA}: ${TBTNIV_NR} tbtniv, ${BEACON_NR} balise(s)." > "${DST_DIR}stats.txt"
 	info "  $(cat "${DST_DIR}stats.txt")"
 
 	for i in {1..2}; do
@@ -212,13 +212,13 @@ while (($# > 0)); do
 		;;
 	-n)
 		shift
-		! [[ $1 =~ ^[0-9]+$ ]] && die 10 "le champ -n doit etre suivi d'un nombre"
+		! [[ $1 =~ ^[0-9]+$ ]] && die 10 "le champ -n doit être suivi d'un nombre"
 		MAX_BEACONS_PER_LINE=$(($1>0?$1:1))
 		;;
 	-o)
 		shift
-		! [ -d "${1}" ] && die 11 "${1} n'est pas un repertoire"
-		! [ -w "${1}" ] && die 11 "${USER} n'a pas les droits en ecriture sur ${1}"
+		! [ -d "${1}" ] && die 11 "${1} n'est pas un répertoire"
+		! [ -w "${1}" ] && die 11 "${USER} n'a pas les droits en écriture sur ${1}"
 		DST_ROOT="${1%/}/"
 		;;
 	-f)
@@ -233,7 +233,7 @@ while (($# > 0)); do
 		;;
 	*)
 		! [ -e "$1" ] && die 11 "$1 n'est pas un fichier existant"
-		! [ -f "$1" ] && die 11 "$1 n'est pas un fichier regulier"
+		! [ -f "$1" ] && die 11 "$1 n'est pas un fichier régulier"
 		! is_balisep "$1" && die 11 "$1 n'est pas un fichier balisep"
 		process_balisep "$1"
 		FILE_NR=$((FILE_NR + 1))
@@ -242,4 +242,4 @@ while (($# > 0)); do
 	shift
 done
 
-[ ${FILE_NR} -eq 0 ] && die 1 "aucun nom de fichier detecte"
+[ ${FILE_NR} -eq 0 ] && die 1 "aucun nom de fichier detecté"
