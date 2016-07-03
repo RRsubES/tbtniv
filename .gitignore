@@ -1,5 +1,7 @@
+*.swp
 BALISEP*
-clear.gen.sh
-*.txt
-*.doc
 *.pdf
+*.doc
+*.gz
+*.txt
+*.cfg
