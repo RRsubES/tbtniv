@@ -5,5 +5,5 @@ cd $WD
 #find -L -path "[^.]*" -prune -type d | xargs rm -rf ;
 find -L -path "[^.]*" ! -name ".git" -prune -type d -exec rm -Rf {} \; > /dev/null 2>&1
 rm BALISEP* *~ > /dev/null 2>&1
-./drag ../tbtniv.data/BALISEP*
+./drag ../lfrr.tbtniv.data/BALISEP*
 
